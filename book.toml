@@ -1,0 +1,9 @@
+[book]
+authors = ["Sergey Mechtaev"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Modus Documentation"
+
+[output.html]
+mathjax-support = true
