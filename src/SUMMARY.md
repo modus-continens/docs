@@ -1,6 +1,6 @@
 # Summary
 
-- [Overview](./overview.md)
+- [Introduction](./introduction.md)
 - [Syntax](./syntax.md)
 - [Semantics](./semantics/README.md)
   - [Logic](./semantics/logic.md)
@@ -23,6 +23,7 @@
   - [Building Multiple Images](examples/multiple.md)
   - [User-Defined Commands](examples/udc.md)
   - [Recursive Build Rules](examples/recursive.md)
+  - [Anonymous Images](examples/anomymous.md)
   - [Merging Layers](examples/merging.md)
   - [Distributed Caching](examples/caching.md)
 - [Command Line Tool](cli/README.md)

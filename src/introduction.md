@@ -1,4 +1,4 @@
-# Overview
+# Introduction
 
 Modus is a [Datalog](https://en.wikipedia.org/wiki/Datalog)-based domain-specific language for building [container](https://en.wikipedia.org/wiki/OS-level_virtualization) images. Modus has the following goals:
 
@@ -6,6 +6,10 @@ Modus is a [Datalog](https://en.wikipedia.org/wiki/Datalog)-based domain-specifi
 - _Efficiency_: make builds efficient by automatic parallelisation and fine-grained caching; provide tools for optimising the image size.
 - _Expressiveness_: enable the user to express complex build workflows.
 - _Simplicity_: provide minimalistic syntax and well-defined, non-Turing-complete semantics for build definitions.
+
+Modus is free software; you can find the source code on [GitHub](https://github.com/modus-continens/modus). For more information, please check [installation guide](https://github.com/modus-continens/modus/blob/main/INSTALL.md). Modus uses semantic versioning; until version 1.0 is declared, breaking changes are possible. We welcome bug reports and feature requests submitted through [GitHub Issues](https://github.com/mechtaev/modus/issues).
+
+## Overview
 
 Container images are intrinsically parametrised. Typical image parameters are software versions, compilation flags and configuration options. For example, an image with Python version 3.7 installed on Ubuntu 20.04 can be represented as `python("3.7", "ubuntu", "20.04")`. Modus explicitly models image parameters in its build rules.
 
@@ -57,7 +61,7 @@ python(python_version, "ubuntu", distr_version) :-
 
 To build an image, the user specifies the target as a query to the build system. For example, the query `python("3.8", "fedora", "34")` builds an image with Python 3.8 installed on Fedora 34. The user can specify a query with variables to build multiple images in parallel. For example, the query `python("3.8", "ubuntu", X), semver_geq(X, "18.04")` will build two images: `python("3.8", "ubuntu", "20.04")` and `python("3.8", "ubuntu", "18.04")`.
 
-An important pattern of container builds is [multi-stage build](https://docs.docker.com/develop/develop-images/multistage-build/). In multi-stage builds, data is transferred between several built images. For example, one image is used to compile the application, and the other is for deployment. In Modus, multi-stage builds are supported using the `::copy` operator (`::workdir` changes the working directory of a container, `::arg` specifies environment variables of a command, `:cmd` provides the default executable):
+An important pattern of container builds is [multi-stage build](https://docs.docker.com/develop/develop-images/multistage-build/). In multi-stage builds, data is transferred between several built images. For example, one image is used to compile the application, and the other is for deployment. In Modus, multi-stage builds are supported using the `::copy` operator (`::workdir` changes the working directory of a container, `::arg` specifies environment variables of a command, `::cmd` provides the default executable):
 
 
 ```
@@ -76,7 +80,7 @@ release :- (
     )::cmd("./app").
 ```
 
-Since Docker images consist of layers, it is impossible to delete files added to the previous layers, which may significantly increase the resulting image size. Modus provides the `:merge` operator that squashes multiple layers into one:
+Since Docker images consist of layers, it is impossible to delete files added to the previous layers, which may significantly increase the resulting image size. Modus provides the `::merge` operator that squashes multiple layers into one:
 
 ```
 app(optimisation) :-
@@ -84,7 +88,7 @@ app(optimisation) :-
     (
         copy("src", "."),
         (optimisation = "on", run("cd src; make install-opt");
-         optimisation = "off, run("cd src; make install"),
+         optimisation = "off, run("cd src; make install")),
         run("rm -rf src")
     )::merge.
 ```
@@ -93,12 +97,12 @@ Software installation and configuration often involve repetitive sequences of in
 
 ```
 install(lib, version) :-
-    run(f"wget https://example.com/releases/${lib}-v${version}.tar.gz),
-    run(f"tar xf ${lib}-v${version}.tar.gz"),
-    run(f"mv ${lib}-v${version}/ /build"),
+    run(f"wget https://example.com/releases/${lib}-v${version}.tar.gz && \
+          tar xf ${lib}-v${version}.tar.gz && \
+          mv ${lib}-v${version}/ /build"),
     run("cd /build && make install"),
-    run(f"rm ${lib}-v${version}.tar.gz"),
-    run("rm /build").
+    run(f"rm ${lib}-v${version}.tar.gz && \
+          rm -rf /build").
     
 app :-
     from("gcc:latest"),
@@ -107,3 +111,5 @@ app :-
         install("libb", "4.1")
     )::merge.
 ```
+
+In this example, the `install` command downloads, compiles and installs the specified versions of the specified libraries. Then, multiple envocations of `install` can be merged using the `::merge` operator resulting in a single layer.

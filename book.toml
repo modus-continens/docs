@@ -7,3 +7,4 @@ title = "Modus Documentation"
 
 [output.html]
 mathjax-support = true
+git-repository-url = "https://github.com/modus-continens/modus"
