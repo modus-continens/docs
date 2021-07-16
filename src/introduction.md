@@ -40,10 +40,12 @@ Build instructions may behave differently depending on the values of the paramet
 python(python_version, "fedora", distr_version) :-
     from("fedora:${distr_version}"),
     run(f"dnf install python${python_version}").
+
 python(python_version, "ubuntu", distr_version) :-
     (distr_version = "16.04"; distr_version = "18.04"; distr_version = "20.04"),
     from("ubuntu:${distr_version}"),
     run(f"apt-get install -y python${python_version}").
+
 python(python_version, "ubuntu", "14.04") :-
     from("ubuntu:${distr_version}"),
     run(f"apt-get install -y software-properties-common && \
@@ -54,7 +56,7 @@ python(python_version, "ubuntu", "14.04") :-
 
 ### Library
 
-Modus provides a library of helper predicates to manipulate common data formats. For example, the second rule above can be re-written using the predicate `semver_geq` that implements the greater or equal comparision operator for versions:
+Modus provides a library of helper predicates to manipulate common data formats (versions, paths, images, etc). For example, the second rule above can be re-written using the predicate `semver_geq` that implements the greater or equal comparision operator for versions:
 
 ```
 python(python_version, "ubuntu", distr_version) :-
@@ -67,9 +69,26 @@ python(python_version, "ubuntu", distr_version) :-
 
 To build an image, the user specifies the target as a query to the build system. For example, the query `python("3.8", "fedora", "34")` for the above script builds an image with Python 3.8 installed on Fedora 34. The user can specify a query with variables to build multiple images in parallel. For example, the query `python("3.8", "ubuntu", X), semver_geq(X, "18.04")` will build two images: `python("3.8", "ubuntu", "20.04")` and `python("3.8", "ubuntu", "18.04")`.
 
+### Hygiene
+
+Modularity requires hygiene. Modus provide fine-grained control over the execution environment of commands. Consider the following example:
+
+```
+app(ARG) :-
+    from("ubuntu:20.04"),
+    copy(".", "/root"),
+    (
+        run("/root/script_1"),
+        run("/root/script_2")::workdir("/etc"),
+    )::arg("ARG", "123"),
+    run(f"/root/script_3 ${ARG}").
+```
+
+Only the scripts 1 and 2 are executed in the environment `ARG=123` set via the `::arg` operator. The script 3 receives the value of the variable `ARG` as the command line argument using a formatted string `f"..."`, but its environment it unaffected. Only the script 2 is executed in the directory `/etc`, which is specified using the `::workdir` operator.
+
 ### Multi-Stage Builds
 
-An important pattern of container builds is [multi-stage build](https://docs.docker.com/develop/develop-images/multistage-build/). In multi-stage builds, data is transferred between several built images. For example, one image is used to compile the application, and the other is for deployment. In Modus, multi-stage builds are supported using the `::copy` operator (`::cd` changes the working directory of a container, `::arg` specifies environment variables of a command, `::cmd` sets the default executable):
+An important pattern of container builds is [multi-stage build](https://docs.docker.com/develop/develop-images/multistage-build/). In multi-stage builds, data is transferred between several built images. For example, one image is used to compile the application, and the other is for deployment. In Modus, multi-stage builds are supported using the `::copy` operator (`::cd` changes the working directory of a container, `::cmd` sets the default executable):
 
 
 ```
@@ -91,7 +110,7 @@ release :-
 
 ### Complex Workflows
 
-Modus enables users to specify complex build workflows that are automatically resolved based on query parameters. For example, the script below builds the dependency `lib` in a separate container if its version is incompatible with the current version of gcc (`workdir` specifies the current working directory of a command, `!` is the logical negation):
+Modus enables users to specify complex build workflows that are automatically resolved based on query parameters. For example, the script below builds the dependency `lib` in a separate container if its version is incompatible with the current version of gcc (`!` is the logical negation):
 
 ```
 ; lib version <= "1.0.2" can be compiled with any version of gcc:
