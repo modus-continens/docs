@@ -36,14 +36,14 @@ Build instructions may behave differently depending on the values of the variabl
 
 ```
 python(python_version, "fedora", distr_version) :-
-    fedora(distr_version),
+    from("fedora:${distr_version}"),
     run(f"dnf install python${python_version}").
 python(python_version, "ubuntu", distr_version) :-
     (distr_version = "16.04"; distr_version = "18.04"; distr_version = "20.04"),
-    ubuntu(distr_version),
+    from("ubuntu:${distr_version}"),
     run(f"apt-get install -y python${python_version}").
 python(python_version, "ubuntu", "14.04") :-
-    ubuntu(distr_version),
+    from("ubuntu:${distr_version}"),
     run(f"apt-get install -y software-properties-common && \
           add-apt-repository ppa:deadsnakes/ppa && \
           apt-get update && \
@@ -55,30 +55,90 @@ Modus provides a library of helper predicates to manipulate common data formats.
 ```
 python(python_version, "ubuntu", distr_version) :-
     semver_geq(distr_version, "16.04"),
-    ubuntu(distr_version),
+    from("ubuntu:${distr_version}"),
     run(f"apt-get install -y python${python_version}").
 ```
 
 To build an image, the user specifies the target as a query to the build system. For example, the query `python("3.8", "fedora", "34")` builds an image with Python 3.8 installed on Fedora 34. The user can specify a query with variables to build multiple images in parallel. For example, the query `python("3.8", "ubuntu", X), semver_geq(X, "18.04")` will build two images: `python("3.8", "ubuntu", "20.04")` and `python("3.8", "ubuntu", "18.04")`.
 
-An important pattern of container builds is [multi-stage build](https://docs.docker.com/develop/develop-images/multistage-build/). In multi-stage builds, data is transferred between several built images. For example, one image is used to compile the application, and the other is for deployment. In Modus, multi-stage builds are supported using the `::copy` operator (`::workdir` changes the working directory of a container, `::arg` specifies environment variables of a command, `::cmd` provides the default executable):
+An important pattern of container builds is [multi-stage build](https://docs.docker.com/develop/develop-images/multistage-build/). In multi-stage builds, data is transferred between several built images. For example, one image is used to compile the application, and the other is for deployment. In Modus, multi-stage builds are supported using the `::copy` operator (`::cd` changes the working directory of a container, `::arg` specifies environment variables of a command, `::cmd` sets the default executable):
 
 
 ```
 builder(go_version) :-
     from(f"golang:${go_version}")
-        ::workdir("/go/src/github.com/alexellis/href-counter/"),
+        ::cd("/go/src/github.com/alexellis/href-counter/"),
     run("go get -d -v golang.org/x/net/html"),
     copy("app.go", "."),
     run("go build -a -installsuffix cgo -o app .")
         ::arg("CGO_ENABLED", "0")::arg("GOOS", "linux").
 
-release :- (
-        from("alpine:latest")::workdir("root"),
+release :-
+    (
+        from("alpine:latest")::cd("root"),
         run("apk --no-cache add ca-certificates"),
         builder("1.16")::copy("/go/src/github.com/alexellis/href-counter/app", ".")
     )::cmd("./app").
 ```
+
+Modus enables users to specify complex build workflows that are automatically resolved based on query parameters. For example, the script below builds the dependency `lib` in a separate container if its version is incompatible with the current version of gcc (`workdir` specifies the current working directory of a command, `!` is the logical negation):
+
+```
+; lib version <= "1.0.2" can be compiled with any version of gcc:
+lib_gcc(lib_version, gcc_version) :- semver_leq(lib_version, "1.0.2").
+
+; lib version > "1.0.2" requires gcc 10.3 or higher:
+lib_gcc(lib_version, gcc_version) :-
+    semver_gt(lib_version, "1.0.2"), semver_geq(gcc_version, "10.3").
+
+lib(lib_version, gcc_version):
+    from(f"gcc:${gcc_version}"),
+    run("mkdir -p /app/lib"),
+    (
+        lib_gcc(lib_version, gcc_version),
+        copy("scripts/install_lib.sh", "/app/lib"),
+        run("./install_lib.sh")
+            ::workdir("/app/lib")::arg("LIB_VERSION", lib_version)
+    ;
+        !lib_gcc(lib_version, gcc_version),
+        lib(lib_version, "10.3")::copy("/app/lib", "/app/lib")
+    ).
+
+app(lib_version, gcc_version) :-
+    lib(lib_version, gcc_version)
+    copy(".", "/app")
+    run("cd /app && make").
+```
+
+For the query `app("1.0.2-beta", "8.5")`, Modus will compute the following build tree:
+
+```
+app("1.0.2-beta", "8.5")
+╞══ lib("1.0.2-beta", "8.5")
+│    ╞══ from("gcc:8.5")
+│    ├── run("mkdir -p /app/lib")
+│    ├── copy("scripts/install_lib.sh", "/app/lib")
+│    └── run("./install_lib.sh")
+├── copy(".", "/app")
+└── run("cd /app && make")
+```
+
+However, for the query `app("1.0.3", "8.5")`, the build tree will be different because `lib_gcc("1.0.3", "8.5")` is false:
+
+```
+app("1.0.3", "8.5")
+╞══ lib("1.0.3", "8.5")
+│    ╞══ from("gcc:8.5")
+│    ├── run("mkdir -p /app/lib")
+│    └── lib("1.0.3", "10.3")::copy("/app/lib", "/app/lib")
+│        ╞══ from("gcc:10.3")
+│        ├── run("mkdir -p /app/lib")
+│        ├── copy("scripts/install_lib.sh", "/app/lib")
+│        └── run("./install_lib.sh")
+├── copy(".", "/app")
+└── run("cd /app && make")
+```
+
 
 Since Docker images consist of layers, it is impossible to delete files added to the previous layers, which may significantly increase the resulting image size. Modus provides the `::merge` operator that squashes multiple layers into one:
 

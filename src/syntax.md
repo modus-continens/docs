@@ -70,7 +70,9 @@ An _image expression_ is defined as follows:
 
 - an image literal, which is an application of an image predicate, is an image expression;
 - an application of an operator to an image expression (`<expression> "::" <operator>`) is an image expression, except for the `::copy` operator;
-- `<expression1> "," <expression2>` is an image expression iff `<expression1>` is an image expression, and `<expression2>` is not an image expression.
+- `<expression1> "," <expression2>` is an image expression iff 
+  - either `<expression1>` is an image expression, and `<expression2>` is not an image expression.
+  - or `<expression1>` is a logic expression and `<expression2>` is an image expression.
 - `<expression1> ";" <expression2>` is an image expression iff both `<expression1>` and `<expression2>` are image expressions.
 
 In the following example, `a` is an image predicate, and `b` is not:

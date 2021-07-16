@@ -14,6 +14,8 @@
       - [String](./library/predicates/logic/string.md)
       - [SemVer](./library/predicates/logic/semver.md)
       - [Registry](./library/predicates/logic/registry.md)
+      - [UNIX](./library/predicates/logic/unix.md)
+      - [URL](./library/predicates/logic/url.md)
   - [Operators](./library/operators/attributes/README.md)
     - [Image](./library/operators/image.md)
     - [Layer](./library/operators/layer.md)

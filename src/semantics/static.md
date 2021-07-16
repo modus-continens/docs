@@ -10,7 +10,7 @@ Consider the following recursive build script:
 a(mode) :- (
         mode = "production", from("alpine"), a("development")::copy("/app", "/app");
         mode = "development", from("gcc"), copy(".", "/app"), run("cd /app && make")
-    )::workdir("/app").
+    )::cd("/app").
 ```
 
 For the query `a(X)`, where `X` is a variable, Modus computes the following build trees:
@@ -45,7 +45,46 @@ Modus uses Datalog for several reasons:
 
 Note that there is no fundamental connection between Datalog's expressive power and container builds. In fact, the expressiveness of the standard Datalog is not sufficient to conveniently express some natural build scenarios. For this reason, Modus supports two extensions, namely builtin predicates described in [Predicates](/library/predicates/README.md) and non-grounded variables. To realise these extensions, Modus uses a custom top-down Datalog solver for generating proofs. 
 
-### Non-Grounded Variables
+### Extensions
+
+Modus extends Datalog with builtin predicates and non-grounded variables. To illustrate these extensions, consider the following build script:
+
+```
+a(cflags) :-
+    from("gcc:latest"),
+    copy(".", "."),
+    run(f"gcc ${clags} test.c -o test").
+```
+
+If the user specifies the query `a("-g")`, then Modus will build an image with a binary compiled with debug symbols. Hovewer, for the query `a(X)`, Modus will return an error, because the compilation flags `cflags` cannot be inferred from build definitions. This problem can be solved by, for example, adding possible compilation flags using a dedicated predicate:
+
+```
+supported_flags("-g").
+supported_flags("").
+
+a(cflags) :-
+    supported_flags(cflags),
+    from("gcc:latest"),
+    copy(".", "."),
+    run(f"gcc ${clags} test.c -o test").
+```
+
+For the later script, the query `a(X)` will results in two images: `a("-g")` and `a("")`.
+
+In the standard Datalog, only the second variant is possible, because all variables have to be grounded (variables apearing in the head of a rule should also appear in the body, not in builtin predicates). Hovewer, specifying all possible values of all parameters is inconvenient. For this reason, Modus supports non-grounded variables. Specifically, it will make the best effort to initialise each variable in the rule before returning an error. Apart from that, each builtin predicate has a Prolog-like signature that specifies which parameters have to be initialised:
+
+```
+predicate(?Variable1, +Variable2, -Variable3)
+```
+
+where
+
+- `?` means: This variable can be either instantiated or not. Both ways are possible.
+- `+` means: This variable is an input to the predicate. As such it must be instantiated.
+- `-` means: This variable is an output to the predicate. It is usually non-instantiated, but may be if you want to check for a specific "return value".
+
+
+For example, `run` has the signature `run(+cmdline)`, which means that the argument has to be initualised.
 
 ### Proof Optimality
 
@@ -57,7 +96,7 @@ To illustrate proof optimality, consider again this build script:
 a(mode) :- (
         mode = "production", from("alpine"), a("development")::copy("/app", "/app");
         mode = "development", from("gcc"), copy(".", "/app"), run("cd /app && make")
-    )::workdir("/app").
+    )::cd("/app").
 ```
 
 For the query `a("production")`, Modus will compute the following build trees:
