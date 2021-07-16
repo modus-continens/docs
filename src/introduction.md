@@ -9,9 +9,9 @@ Modus is a [Datalog](https://en.wikipedia.org/wiki/Datalog)-based domain-specifi
 
 Modus is free software; you can find the source code on [GitHub](https://github.com/modus-continens/modus). For more information, please check [installation guide](https://github.com/modus-continens/modus/blob/main/INSTALL.md). Modus uses semantic versioning; until version 1.0 is declared, breaking changes are possible. We welcome bug reports and feature requests submitted through [GitHub Issues](https://github.com/mechtaev/modus/issues).
 
-## Overview
+### Parameterised Builds
 
-Container images are intrinsically parametrised. Typical image parameters are software versions, compilation flags and configuration options. For example, an image with Python version 3.7 installed on Ubuntu 20.04 can be represented as `python("3.7", "ubuntu", "20.04")`. Modus explicitly models image parameters in its build rules.
+Container images are intrinsically parameterised. Typical image parameters are software versions, compilation flags and configuration options. For example, an image with Python version 3.7 installed on Ubuntu 20.04 can be represented as `python("3.7", "ubuntu", "20.04")`. Modus explicitly models image parameters in its build rules.
 
 Build rules describe how new images are constructed from existing images. For example, an
 image with installed Pylint can be built using the following rule:
@@ -32,7 +32,9 @@ pylint(python_version, "ubuntu", ubuntu_version) :-
 
 Such representation of rules naturally maps to [Horn clauses](https://en.wikipedia.org/wiki/Horn_clause), logical formulas in the form \\( u \leftarrow (p \wedge q\ \wedge ... \wedge\ t) \\). Particularly, container images correspond to logical facts,  build rules are logical rules that derive new facts from existing facts, and the build tree is the minimal proof of the fact representing the build target from the facts representing existing images.
 
-Build instructions may behave differently depending on the values of the variables. To specify these differences, logical conditions are used to constraint the applicability of each rule. The example below shows how `python(python_version, distr, distr_version)` is built for different Linux distributions (`,` is the logical and, `;` is the logical or, `f"..."` is a format string):
+### Dependencies
+
+Build instructions may behave differently depending on the values of the parameters. To specify these differences, logical conditions are used to constraint the applicability of each rule. The example below shows how `python(python_version, distr, distr_version)` is built for different Linux distributions (`,` is the logical and, `;` is the logical or, `f"..."` is a format string):
 
 ```
 python(python_version, "fedora", distr_version) :-
@@ -50,6 +52,8 @@ python(python_version, "ubuntu", "14.04") :-
           apt-get install -y python${python_version}").
 ```
 
+### Library
+
 Modus provides a library of helper predicates to manipulate common data formats. For example, the second rule above can be re-written using the predicate `semver_geq` that implements the greater or equal comparision operator for versions:
 
 ```
@@ -59,7 +63,11 @@ python(python_version, "ubuntu", distr_version) :-
     run(f"apt-get install -y python${python_version}").
 ```
 
-To build an image, the user specifies the target as a query to the build system. For example, the query `python("3.8", "fedora", "34")` builds an image with Python 3.8 installed on Fedora 34. The user can specify a query with variables to build multiple images in parallel. For example, the query `python("3.8", "ubuntu", X), semver_geq(X, "18.04")` will build two images: `python("3.8", "ubuntu", "20.04")` and `python("3.8", "ubuntu", "18.04")`.
+### Multiple Images
+
+To build an image, the user specifies the target as a query to the build system. For example, the query `python("3.8", "fedora", "34")` for the above script builds an image with Python 3.8 installed on Fedora 34. The user can specify a query with variables to build multiple images in parallel. For example, the query `python("3.8", "ubuntu", X), semver_geq(X, "18.04")` will build two images: `python("3.8", "ubuntu", "20.04")` and `python("3.8", "ubuntu", "18.04")`.
+
+### Multi-Stage Builds
 
 An important pattern of container builds is [multi-stage build](https://docs.docker.com/develop/develop-images/multistage-build/). In multi-stage builds, data is transferred between several built images. For example, one image is used to compile the application, and the other is for deployment. In Modus, multi-stage builds are supported using the `::copy` operator (`::cd` changes the working directory of a container, `::arg` specifies environment variables of a command, `::cmd` sets the default executable):
 
@@ -80,6 +88,8 @@ release :-
         builder("1.16")::copy("/go/src/github.com/alexellis/href-counter/app", ".")
     )::cmd("./app").
 ```
+
+### Complex Workflows
 
 Modus enables users to specify complex build workflows that are automatically resolved based on query parameters. For example, the script below builds the dependency `lib` in a separate container if its version is incompatible with the current version of gcc (`workdir` specifies the current working directory of a command, `!` is the logical negation):
 
@@ -139,6 +149,7 @@ app("1.0.3", "8.5")
 └── run("cd /app && make")
 ```
 
+### Merging Layers
 
 Since Docker images consist of layers, it is impossible to delete files added to the previous layers, which may significantly increase the resulting image size. Modus provides the `::merge` operator that squashes multiple layers into one:
 
@@ -152,6 +163,8 @@ app(optimisation) :-
         run("rm -rf src")
     )::merge.
 ```
+
+### User-Defined Commands
 
 Software installation and configuration often involve repetitive sequences of instructions. Modus allows to encapsulate them into reusable user-defined commands:
 
