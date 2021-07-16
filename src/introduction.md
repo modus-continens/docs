@@ -30,7 +30,7 @@ pylint(python_version, "ubuntu", ubuntu_version) :-
     run("pip install pylint").
 ```
 
-Such representation of rules naturally maps to [Horn clauses](https://en.wikipedia.org/wiki/Horn_clause), logical formulas in the form \\( u \leftarrow (p \wedge q\ \wedge ... \wedge\ t) \\). Particularly, container images correspond to logical facts,  build rules are logical rules that derive new facts from existing facts, and the build tree is a proof of the fact representing the build target from true facts representing existing images.
+Such representation of rules naturally maps to [Horn clauses](https://en.wikipedia.org/wiki/Horn_clause), logical formulas in the form \\( u \leftarrow (p \wedge q\ \wedge ... \wedge\ t) \\). Particularly, container images correspond to logical facts,  build rules are logical rules that derive new facts from existing facts, and the build tree is the minimal proof of the fact representing the build target from the facts representing existing images.
 
 Build instructions may behave differently depending on the values of the variables. To specify these differences, logical conditions are used to constraint the applicability of each rule. The example below shows how `python(python_version, distr, distr_version)` is built for different Linux distributions (`,` is the logical and, `;` is the logical or, `f"..."` is a format string):
 

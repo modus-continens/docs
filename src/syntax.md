@@ -1,13 +1,18 @@
 # Syntax
 
-A Modus build srcipt is a sequence of rules. Each rule is of the form 
+A Modus build srcipt is a sequence of facts and rules. A fact is of the form
+
+```
+<fact> ::= <head> "."
+```
+
+A rule is of the form 
 
 ```
 <rule> ::= <head> ":-" <body> "."
-         | <head> "."
 ```
 
-The head of a rule is a `<literal>` of the form
+The head of a fact or a rule is a `<literal>` of the form
 
 ```
 <literal> ::= <identifier> "(" <arg_list> ")"
@@ -56,12 +61,12 @@ In a literal such as `a(b, "c")`, we refer to `a` as the predicate name. There e
 - layer predicates;
 - logic predicates.
 
-An image predicate is one of the following:
+An _image predicate_ is one of the following:
 
 - builtin predicate `from`;
 - a predicate, in all definitions `<head> :- <body>` of which, the body is an image expression.
 
-An image expression is defined as follows:
+An _image expression_ is defined as follows:
 
 - an image literal, which is an application of an image predicate, is an image expression;
 - an application of an operator to an image expression (`<expression> "::" <operator>`) is an image expression, except for the `::copy` operator;
@@ -78,13 +83,13 @@ a :-
 b(X) :- X = "a".
 ```
 
-A layer predicate is one of the following:
+A _layer predicate_ is one of the following:
 
 - the builtin predicate `run`;
 - the builtin predicate `copy`;
 - a predicate, in all definitions `<head> :- <body>` of which, the body is a layer expression.
 
-A layer expression is defined as follows:
+A _layer expression_ is defined as follows:
 
 - a layer literal, which is an application of a layer predicate, is a layer expression;
 - an application of an operator to a layer expression (`<expression> "::" <operator>`) is a layer expression;
@@ -99,12 +104,12 @@ a :- (from("ubuntu"), run("apt-get update"))::copy("/etc/hosts", ".").
 b(X) :- X = "a".
 ```
 
-A layer predicate is one of the following:
+A _logic predicate_ is one of the following:
 
 - a buildin predicate, except for `from`, `run` and `copy`;
 - a predicate, in all definitions `<head> :- <body>` of which, the body is a logic expression.
 
-A logic expression is defined as follows:
+A _logic expression_ is defined as follows:
 
 - a logic literal, which is an application of a logic predicate, is a logic expression;
 - a unification is a logic expression;
