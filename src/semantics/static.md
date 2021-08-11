@@ -1,6 +1,6 @@
 # Static
 
-Modus represents build rules as [Horn clauses](https://en.wikipedia.org/wiki/Horn_clause), logical formulas in the form \\( u \leftarrow (p \wedge q\ \wedge ... \wedge\ t) \\). Container images correspond to logical facts; build rules are logical rules that derive new facts from existing facts. To build an image or a set of images, the user specifies a query, which is is an image expression (see [Predicate Kinds](../syntax.md#predicate-kinds)).
+Modus represents build rules as [Horn clauses](https://en.wikipedia.org/wiki/Horn_clause), logical formulas in the form \\( u \leftarrow (p \wedge q\ \wedge ... \wedge\ t) \\). Container images correspond to logical facts; build rules are logical rules that derive new facts from existing facts. To build an image or a set of images, the user specifies a query, which is an image expression (see [Predicate Kinds](../syntax.md#predicate-kinds)).
 
 For a given build script (a sequence of rules and facts) and a query, the static semantics is the optimal proof of the query from the given facts using the given rules.
 
@@ -42,12 +42,11 @@ Modus uses Datalog for several reasons:
 - Datalog is expressive;
 - in Datalog, the generation of minimal proofs is decidable.
 
+Note that there is no fundamental connection between Datalog's expressive power and container builds. In fact, the expressiveness of the standard Datalog is not sufficient to conveniently express some natural build scenarios. For this reason, Modus supports two extensions, namely builtin predicates described in [Predicates](/library/predicates/README.md) and non-grounded variables. To realise these extensions, Modus uses a custom top-down Datalog solver for generating proofs.
 
-Note that there is no fundamental connection between Datalog's expressive power and container builds. In fact, the expressiveness of the standard Datalog is not sufficient to conveniently express some natural build scenarios. For this reason, Modus supports two extensions, namely builtin predicates described in [Predicates](/library/predicates/README.md) and non-grounded variables. To realise these extensions, Modus uses a custom top-down Datalog solver for generating proofs. 
+### Non-Grounded Variables
 
-### Extensions
-
-Modus extends Datalog with builtin predicates and non-grounded variables. To illustrate these extensions, consider the following build script:
+Modus extends Datalog with non-grounded variables. To illustrate this extension, consider the following build script:
 
 ```
 a(cflags) :-
@@ -71,20 +70,10 @@ a(cflags) :-
 
 For the later script, the query `a(X)` will results in two images: `a("-g")` and `a("")`.
 
-In the standard Datalog, only the second variant is possible, because all variables have to be grounded (variables apearing in the head of a rule should also appear in the body, not in builtin predicates). Hovewer, specifying all possible values of all parameters is inconvenient. For this reason, Modus supports non-grounded variables. Specifically, it will make the best effort to initialise each variable in the rule before returning an error. Apart from that, each builtin predicate has a Prolog-like signature that specifies which parameters have to be initialised:
+In the standard Datalog, only the second variant is possible, because all variables have to be grounded (variables apearing in the head of a rule should also appear in the body, not in builtin predicates). Hovewer, specifying all possible values of all parameters is inconvenient. For this reason, Modus supports non-grounded variables. Specifically, it will make the best effort to initialise each variable in the rule before returning an error.
 
-```
-predicate(?Variable1, +Variable2, -Variable3)
-```
+Builtin predicates in Modus has Prolog-like signatures that specify which parameters have to be initialised (see [Predicates](../library/predicates/README.md)).
 
-where
-
-- `?` means: This variable can be either instantiated or not. Both ways are possible.
-- `+` means: This variable is an input to the predicate. As such it must be instantiated.
-- `-` means: This variable is an output to the predicate. It is usually non-instantiated, but may be if you want to check for a specific "return value".
-
-
-For example, `run` has the signature `run(+cmdline)`, which means that the argument has to be initualised.
 
 ### Proof Optimality
 
