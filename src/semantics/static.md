@@ -10,7 +10,7 @@ Consider the following recursive build script:
 a(mode) :- (
         mode = "production", from("alpine"), a("development")::copy("/app", "/app");
         mode = "development", from("gcc"), copy(".", "/app"), run("cd /app && make")
-    )::cd("/app").
+    )::set_workdir("/app").
 ```
 
 For the query `a(X)`, where `X` is a variable, Modus computes the following build trees:
@@ -85,7 +85,7 @@ To illustrate proof optimality, consider again this build script:
 a(mode) :- (
         mode = "production", from("alpine"), a("development")::copy("/app", "/app");
         mode = "development", from("gcc"), copy(".", "/app"), run("cd /app && make")
-    )::cd("/app").
+    )::set_workdir("/app").
 ```
 
 For the query `a("production")`, Modus will compute the following build trees:

@@ -110,33 +110,34 @@ app(ARG) :-
     copy(".", "/root"),
     (
         run("/root/script_1"),
-        run("/root/script_2")::workdir("/etc"),
-    )::arg("ARG", "123"),
+        run("/root/script_2")::in_workdir("/etc"),
+    )::in_env("ARG", "123"),
     run(f"/root/script_3 ${ARG}").
 ```
 
-Only the scripts 1 and 2 are executed in the environment `ARG=123` set via the `::arg` operator. The script 3 receives the value of the variable `ARG` as the command line argument using a formatted string `f"..."`, but its environment it unaffected. Only the script 2 is executed in the directory `/etc`, which is specified using the `::workdir` operator.
+Only the scripts 1 and 2 are executed in the environment `ARG=123` set via the `::in_env` operator. The script 3 receives the value of the variable `ARG` as the command line argument using a formatted string `f"..."`, but its environment it unaffected. Only the script 2 is executed in the directory `/etc`, which is specified using the `::in_workdir` operator.
 
 ### Multi-Stage Builds
 
-In multi-stage builds, data is transferred between several built images. For example, one image is used to compile the application, and the other is for deployment. In Modus, multi-stage builds are supported using the `::copy` operator (`::cd` changes the working directory of a container, `::cmd` sets the default executable):
+In multi-stage builds, data is transferred between several built images. For example, one image is used to compile the application, and the other is for deployment. In Modus, multi-stage builds are supported using the `::copy` operator (`::set_workdir` changes the working directory of a container, `::set_cmd` sets the default executable):
 
 
 ```
 builder(go_version) :-
     from(f"golang:${go_version}")
-        ::cd("/go/src/github.com/alexellis/href-counter/"),
+        ::set_workdir("/go/src/github.com/alexellis/href-counter/"),
     run("go get -d -v golang.org/x/net/html"),
     copy("app.go", "."),
     run("go build -a -installsuffix cgo -o app .")
-        ::arg("CGO_ENABLED", "0")::arg("GOOS", "linux").
+        ::in_env("CGO_ENABLED", "0")
+        ::in_env("GOOS", "linux").
 
 release :-
     (
-        from("alpine:latest")::cd("root"),
+        from("alpine:latest")::set_workdir("/root"),
         run("apk --no-cache add ca-certificates"),
         builder("1.16")::copy("/go/src/github.com/alexellis/href-counter/app", ".")
-    )::cmd("./app").
+    )::set_cmd("./app").
 ```
 
 ### Complex Workflows
@@ -158,7 +159,7 @@ lib(lib_version, gcc_version):
         lib_gcc(lib_version, gcc_version),
         copy("scripts/install_lib.sh", "/app/lib"),
         run("./install_lib.sh")
-            ::workdir("/app/lib")::arg("LIB_VERSION", lib_version)
+            ::in_workdir("/app/lib")::in_env("LIB_VERSION", lib_version)
     ;
         !lib_gcc(lib_version, gcc_version),
         lib(lib_version, "10.3")::copy("/app/lib", "/app/lib")

@@ -45,17 +45,17 @@ Modus standard library is a collection of builtin predicates and operators. Pred
 | Operator | Kind | Description |
 | - | - | - |
 | [`::copy`](./operators/image.md#copy) | Image | Copy file/directory to current image |
-| [`::user`](./operators/image.md#user) | Image | Set user |
-| [`::expose`](./operators/image.md#expose) | Image | Set exposed port |
-| [`::env`](./operators/image.md#env) | Image | Set environment variable |
-| [`::entrypoint`](./operators/image.md#entrypoint) | Image | Set entrypoint |
-| [`::cmd`](./operators/image.md#cmd) | Image | Set default arguments to entrypoint |
-| [`::volume`](./operators/image.md#volume) | Image | Set volume |
-| [`::workdir`](./operators/image.md#workdir) | Image | Set current working directory |
-| [`::label`](./operators/image.md#label) | Image | Add metadata to image |
-| [`::stopsignal`](./operators/image.md#stopsignal) | Image | Set stop signal |
-| [`::cd`](./operators/image.md#cd) | Layer | Change working directory for layer commands |
-| [`::arg`](./operators/image.md#arg) | Layer | Set environment variables for layer commands |
+| [`::set_user`](./operators/image.md#set_user) | Image | Set user |
+| [`::set_expose`](./operators/image.md#set_expose) | Image | Set exposed port |
+| [`::set_env`](./operators/image.md#set_env) | Image | Set environment variable |
+| [`::set_entrypoint`](./operators/image.md#set_entrypoint) | Image | Set entrypoint |
+| [`::set_cmd`](./operators/image.md#set_cmd) | Image | Set default arguments to entrypoint |
+| [`::set_volume`](./operators/image.md#set_volume) | Image | Set volume |
+| [`::set_workdir`](./operators/image.md#set_workdir) | Image | Set current working directory |
+| [`::set_label`](./operators/image.md#set_label) | Image | Add metadata to image |
+| [`::set_stopsignal`](./operators/image.md#set_stopsignal) | Image | Set stop signal |
+| [`::in_workdir`](./operators/image.md#in_workdir) | Layer | Specify working directory for layer commands |
+| [`::in_env`](./operators/image.md#in_env) | Layer | Specify environment variables for layer commands |
 | [`::merge`](./operators/image.md#arg) | Layer | Marge layers |
 | [`::max_number`](./operators/image.md#max_number) | Logic | Maximize given number |
 | [`::min_number`](./operators/image.md#min_number) | Logic | Minimize given number |
