@@ -1,4 +1,4 @@
-# Syntax
+# Grammar
 
 A Modus build srcipt is a sequence of facts and rules. A fact is of the form
 
@@ -158,6 +158,3 @@ Formatted strings are just like normal strings, but they starts with the letter 
 - `f"abc"`
 - `f"10\$"`
 - `f"hello, ${name}"`
-
-
-

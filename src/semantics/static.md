@@ -30,7 +30,7 @@ a("development")
 
 The subtree `a("development")` of the two trees is shared; it is only built once.
 
-Datalog is a specific kind of Horn clauses with specific semantics. To use Modus, the knowledge of Datalog is not required. Hovewer, to understand the semantics of Modus precisely, it is recommended to consult the following article:
+Datalog is a specific kind of Horn clauses with specific semantics. To use Modus, the knowledge of Datalog is not required. However, to understand the semantics of Modus precisely, it is recommended to consult the following article:
 
 _What You Always Wanted to Know About Datalog (And Never Dared to Ask)_<br>
 Stefano Ceri, Georg Gottlob, Letizia Tanca<br>
@@ -52,10 +52,10 @@ Modus extends Datalog with non-grounded variables. To illustrate this extension,
 a(cflags) :-
     from("gcc:latest"),
     copy(".", "."),
-    run(f"gcc ${clags} test.c -o test").
+    run(f"gcc ${cflags} test.c -o test").
 ```
 
-If the user specifies the query `a("-g")`, then Modus will build an image with a binary compiled with debug symbols. Hovewer, for the query `a(X)`, Modus will return an error, because the compilation flags `cflags` cannot be inferred from build definitions. This problem can be solved by, for example, adding possible compilation flags using a dedicated predicate:
+If the user specifies the query `a("-g")`, then Modus will build an image with a binary compiled with debug symbols. However, for the query `a(X)`, Modus will return an error, because the compilation flags `cflags` cannot be inferred from build definitions. This problem can be solved by, for example, adding possible compilation flags using a dedicated predicate:
 
 ```
 supported_flags("-g").
@@ -65,12 +65,12 @@ a(cflags) :-
     supported_flags(cflags),
     from("gcc:latest"),
     copy(".", "."),
-    run(f"gcc ${clags} test.c -o test").
+    run(f"gcc ${cflags} test.c -o test").
 ```
 
 For the later script, the query `a(X)` will results in two images: `a("-g")` and `a("")`.
 
-In the standard Datalog, only the second variant is possible, because all variables have to be grounded (variables apearing in the head of a rule should also appear in the body, not in builtin predicates). Hovewer, specifying all possible values of all parameters is inconvenient. For this reason, Modus supports non-grounded variables. Specifically, it will make the best effort to initialise each variable in the rule before returning an error.
+In the standard Datalog, only the second variant is possible, because all variables have to be grounded (variables apearing in the head of a rule should also appear in the body, not in builtin predicates). However, specifying all possible values of all parameters is inconvenient. For this reason, Modus supports non-grounded variables. Specifically, it will make the best effort to initialise each variable in the rule before returning an error.
 
 Builtin predicates in Modus has Prolog-like signatures that specify which parameters have to be initialised (see [Predicates](../library/predicates/README.md)).
 
