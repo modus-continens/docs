@@ -1,6 +1,6 @@
 # Predicates
 
-Builtin predicates have Prolog-like signatures that specify which parameters have to be initialised (see [Non-Grounded Variables](../semantics/static.md#non-grounded-variables)):
+Builtin predicates have Prolog-like signatures that specify which parameters have to be initialised (see [Non-Grounded Variables](../../semantics/static.md#non-grounded-variables)):
 
 ```
 predicate(?Variable1, +Variable2, -Variable3)
