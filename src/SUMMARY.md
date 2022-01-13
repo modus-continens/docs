@@ -18,7 +18,7 @@
       - [Registry](./library/predicates/logic/registry.md)
       - [UNIX](./library/predicates/logic/unix.md)
       - [URL](./library/predicates/logic/url.md)
-  - [Operators](./library/operators/attributes/README.md)
+  - [Operators]()
     - [Image](./library/operators/image.md)
     - [Layer](./library/operators/layer.md)
     - [Logic](./library/operators/logic.md)

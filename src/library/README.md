@@ -45,6 +45,8 @@ Modus standard library is a collection of builtin predicates and operators. Pred
 
 ### List of Operators
 
+Operators are predicates beginning with `::` which can be applied to a set of predicates.
+
 | Operator | Kind | Description |
 | - | - | - |
 | [`::copy`](./operators/image.md#copy) | Image | Copy file/directory to current image |
@@ -66,6 +68,3 @@ Modus standard library is a collection of builtin predicates and operators. Pred
 | [`::min_string`](./operators/image.md#min_string) | Logic | Minimize given string |
 | [`::max_semver`](./operators/image.md#max_string) | Logic | Maximize given SemVer version |
 | [`::min_semver`](./operators/image.md#min_string) | Logic | Minimize given SemVer version |
-
-
-

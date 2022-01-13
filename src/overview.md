@@ -119,7 +119,7 @@ Only the scripts 1 and 2 are executed in the environment `ARG=123` set via the `
 
 ### Multi-Stage Builds
 
-In multi-stage builds, data is transferred between several built images. For example, one image is used to compile the application, and the other is for deployment. In Modus, multi-stage builds are supported using the `::copy` operator (`::set_workdir` changes the working directory of a container, `::set_cmd` sets the default executable):
+In multi-stage builds, data is transferred between several built images. For example, one image is used to compile the application, and the other is for deployment. In Modus, multi-stage builds are supported using the `::copy` operator (`::set_workdir` changes the working directory of a container, `::set_entrypoint` sets the image entrypoint):
 
 
 ```
@@ -137,7 +137,7 @@ release :-
         from("alpine:latest")::set_workdir("/root"),
         run("apk --no-cache add ca-certificates"),
         builder("1.16")::copy("/go/src/github.com/alexellis/href-counter/app", ".")
-    )::set_cmd("./app").
+    )::set_entrypoint("./app").
 ```
 
 ### Complex Workflows
