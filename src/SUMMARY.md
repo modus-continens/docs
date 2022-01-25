@@ -1,6 +1,7 @@
 # Summary
 
 - [Introduction](./introduction.md)
+- [Tutorial](./tutorial.md)
 - [Overview](./overview.md)
 - [Syntax](./syntax/README.md)
   - [Grammar](syntax/grammar.md)
@@ -22,12 +23,4 @@
     - [Image](./library/operators/image.md)
     - [Layer](./library/operators/layer.md)
     - [Logic](./library/operators/logic.md)
-- [Guides](guides/README.md)
-  - [Code reuse](guides/reuse.md)
-  - [Dependency resolution](guides/dependency.md)
-  - [Optimising Image Size](guides/size.md)
-  - [Caching](guides/caching.md)
-  - [Building Multiple Images](guides/multiple.md)
-  - [Secrets](guides/multiple.md)
-  - [Profiling & Debugging](guides/debugging.md)
 - [Command Line Tool](cli/README.md)
