@@ -95,7 +95,10 @@ A _layer expression_ is defined as follows:
 
 - a layer literal, which is an application of a layer predicate, is a layer expression;
 - an application of an operator to a layer expression (`<expression> "::" <operator>`) is a layer expression;
-- `<expression1> "," <expression2>` and `<expression1> ";" <expression2>` are layer expressions iff both `<expression1>` and `<expression2>` are layer expressions.
+- `<expression1> "," <expression2>` is a layer expressions iff either:
+  - both `<expression1>` and `<expression2>` are layer expressions.
+  - or `<expression1>` is a logic expression and `<expression2>` is a layer expression.
+- `<expression1> ";" <expression2>` is a layer expression iff both `<expression1>` and `<expression2>` are layer expressions.
 - an application of the operator `::copy` to an image literal is a layer expression;
 
 In the following example, `a` is a layer predicate, and `b` is not:
