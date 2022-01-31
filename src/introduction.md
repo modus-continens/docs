@@ -9,6 +9,6 @@ Modus is a dialect of [Datalog](https://en.wikipedia.org/wiki/Datalog) for build
 
 Please check the [language overview](./overview.md) to see how Modus achieves these goals.
 
-Modus is free software; you can find the source code on [GitHub](https://github.com/modus-continens/modus). To get started with Modus, please check [installation guide](https://github.com/modus-continens/modus/blob/main/INSTALL.md). <!-- FIXME -->
+Modus is free software; you can find the source code on [GitHub](https://github.com/modus-continens/modus). To get started with Modus, please check [installation guide](tutorial.html#installation).
 
 Modus uses semantic versioning; until version 1.0 is declared, breaking changes are possible. The current version, 0.1, is a preview release. We welcome bug reports and feature requests submitted through [GitHub Issues](https://github.com/mechtaev/modus/issues).
