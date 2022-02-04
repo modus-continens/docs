@@ -25,20 +25,34 @@ To do the same with Modus, you would probably start with the following Modusfile
 ```Modusfile
 my_app(profile) :-
   (
-    from("rust")::set_workdir("/usr/src/app"), # FROM rust; WORKDIR /usr/src/app
+    from("rust:alpine")::set_workdir("/usr/src/app"), # FROM rust:alpine; WORKDIR /usr/src/app
     copy(".", "."), # COPY . .
     cargo_build(profile), # calling into another predicate
-  )::set_entrypoint(f"target/${profile}/my_app"). # ENTRYPOINT ["$PWD/target/release/my_app"]
+  )::set_entrypoint(f"./target/${profile}/my_app"). # ENTRYPOINT ["./target/release/my_app"]
 
 cargo_build("debug") :- run("cargo build"). # RUN cargo build
 cargo_build("release") :- run("cargo build --release"). # RUN cargo build --release
 ```
 
-Assuming that you are familiar with Dockerfiles, the meaning of the above Modusfile should be mostly easy to guess. In Modusfile line-comments starts with `#`. In the above case, the equivalent instructions in Dockerfile have been written out for clarity.
+Assuming that you are familiar with Dockerfiles, the meaning of the above Modusfile should be mostly easy to guess. In particular:
 
-You may notice that, instead of writing `run("cargo build")` directly in `my_app`, we used a predicate `cargo_build` which we defined later. You can think of this almost as some sort of "subroutines". Note that when defining `cargo_build`, we have separate definition for when the argument is `dev` and when it is `release`.
+* Line-comments starts with `#`. In the above case, the equivalent instructions in Dockerfile have been written out for clarity using comments.
 
-Also note the special syntax for `set_workdir` and `set_entrypoint`: they are *operators* in Modus, and in this case they both operate on images. The `set_workdir` operator takes in a path, and emits a new image with the working directory property set to the provided path. This will affect future resolution of relative paths, such as in the destination argument of `copy`. `set_entrypoint` simply overrides the entrypoint of an image. (Note that the entrypoint can currently only be an (absolute or relative) path to an executable, not a shell command.)
+* Modusfile consists of a series of rules of the form `HEAD :- BODY.`, where *HEAD* is a single literal, and *BODY* is an expression involving other literals. **Note that the `.` in the end denotes the end of the rule, and is a required part of the syntax.**
+
+* A literal has the form `foo(arg1, arg2, ...)` where `foo` is the name of the predicate you are referring to, and `arg1`, `arg2`, etc. are arguments. Examples of literals in the above file are `my_app("debug")`, `from("rust")`, etc. Literals can also have no parameters, in which case you omit the parenthesis, like `my_app`.
+
+* Expression uses `,` to denote logical "and", and `;` to denote logical "or". Expressions can be nested with `()`, and can also have "`::`" operators which may change the behaviour of the modified expression in some way. We will learn more about the logical aspect of Modus in a later section, but for now just think of `a, b` as "do `a` then `b`", and think of `a; b` as "do either of `a` or `b`, whichever works".
+
+Note that instead of writing `run("cargo build")` directly in `my_app`, we used a custom rule `cargo_build` which we defined later, and when defining `cargo_build`, we have separate definition for when the argument is `dev` and when it is `release`. To make this clearer, consider the line
+
+```Modusfile
+cargo_build("debug") :- run("cargo build").
+```
+
+What this means is that `run("cargo build")` *implies* (\\(\Rightarrow\\)) `cargo_build("debug")`. Given this definition, whenever Modus sees `cargo_build("debug")`, it will know to replace that with `run("cargo build")`.
+
+Also note the operators `set_workdir` and `set_entrypoint` which are applied to other expressions. The `set_workdir` operator takes in a path, and set the working directory property of the image being operated on. This will affect future resolution of relative paths, such as in the destination argument of `copy`. `set_entrypoint` simply overrides the entrypoint of an image.
 
 To build a Modusfile, you just need to use the "`modus build`" command. The usage is fairly similar to `docker build`:
 
@@ -46,11 +60,9 @@ To build a Modusfile, you just need to use the "`modus build`" command. The usag
 modus build [-f <Modusfile>] <CONTEXT> <QUERY>
 ```
 
-**CONTEXT** is a directory containing any source file that you want to make available to Docker, just like the context directory in `docker build`. **QUERY** is a "invocation" of the rule you want to build, expressed as a *literal*. A literal in Modus has the form `foo(arg1, arg2, ...)` where `foo` is the name of the predicate you are referring to, and `arg1`, `arg2`, etc. are arguments. Examples of literals in the above file are `my_app("debug")`, `from("rust")`, `set_entrypoint("target/release/my_app")`, etc. You can use "`-f <Modusfile>`" to specify the Modusfile to build, and the default is `Modusfile` in the context directory.
+**CONTEXT** is a directory containing any source file that you want to make available to Docker, just like the context directory in `docker build`. **QUERY** is a literal denoting what you want to build. You can use "`-f <Modusfile>`" to specify the Modusfile to build, and the default is `Modusfile` in the context directory.
 
-In our case, we can use `my_app("debug")` as our query in order to build a debug image. However, we can also specify unbounded variables in our query. If we simply use `my_app(X)` as our query, Modus will build **two** images in parallel for us, one being the debug image and the other being the release image. You can think of it as saying "For all X, as long as `my_app(X)` is defined, build it".
-
-You can also go a step further and add parameters to select the rust channel, base distributions, etc.
+In our case, we can use `my_app("debug")` as our query in order to build a debug image. However, we can also specify unbounded variables in our query. If we simply use `my_app(X)` as our query, **Modus will build two images in parallel** for us, one being the debug image and the other being the release image. You can think of it as saying "For all X, as long as `my_app(X)` can be proven, build it". You can also go a step further and add parameters to select the rust channel, base distributions, etc.
 
 You can't specify a default to these parameters, but you can define versions of `my_app` which takes different numbers (including zero) of parameters, to simulate having a default. For example, by adding:
 
@@ -62,16 +74,75 @@ The query `my_app` will now build the release version, while you can still use `
 
 ## Intermediate build stages
 
-TODO
+For our next step, we want to reduce the size of the final image by building the rust code in a separate stage, then starting a new image and copying the binary inside. This can be easily implemented in Modusfile as well. We will just need to add the following lines to our existing Modusfile, and use `trimmed_app` as our query instead:
 
-## Leverging parallelism
+```Modusfile
+trimmed_app(profile) :-
+  (
+    from("alpine"),
+    my_app(profile)::copy(f"target/${profile}/my_app", ".")
+  )::set_entrypoint("./my_app").
+```
 
-Let's say that you have taken your fancy Rust web app to the next level, and also wrote its front-end in Rust. This means that you will also need to compile your front-end code with cargo, but since you are compiling for the "wasm" target, it needs to be done separately from the compilation of the backend server - one `cargo build` isn't going to do it.
+`image::copy(source, destination)` is an operator that allows you to copy files from another image to the current one. The `image` here can actually be any expression generating an image, so you could also "inline" `my_app` and write something like:
 
-The "naive" way to do this would be to put another build step after `cargo build`, which would also build the wasm target. This certainly works, but you may be missing out on potential parallelism which can save you some precious CI time.
+```Modusfile
+trimmed_app(profile) :-
+  (
+    from("alpine"),
+    (
+      from("rust:alpine")::set_workdir("/usr/src/app"),
+      copy(".", "."),
+      cargo_build(profile)
+    )::copy(f"target/${profile}/my_app", ".")
+  )::set_entrypoint("./my_app").
+```
 
-TODO
+Note that both `source` and `destination` can be relative paths. They will all be resolved sensibly based on respective the working directory.
 
-## Where to go from here...
+## Logics in Modus
+
+Not all predicates has to be about building. Since Modus is based on a logic programming language, it goes without saying that you can write more complicated Modusfile, which can do things like figure out which version of compiler to use depeneding on constraints on parameters, or take additional steps for debug builds, etc. Here is a quick rundown of some Modus patterns:
+
+* Defining multiple rules for the same predicate with different parameters. We have already seen how this lets us "select" what cargo command to run.
+* Creating a dictionary by defining a set of constant rules for a predicate. For example:
+
+```Modusfile
+target_cc_flags("debug", "-Og -fsanitize=address,undefined").
+target_cc_flags("release", "-O3").
+target_cc_flags("fuzz", "-Og -fsanitize=fuzzer,address,undefined -DFUZZING=1").
+
+my_app(target) :-
+  ...,
+  target_cc_flags(target, flags),
+  run(f"make CFLAGS='${flags}' CXXFLAGS='${flags}'"),
+  ....
+```
+
+Note that rules with no body can be written as `HEAD.`, and is always true.
+
+* Defining a predicate that "restricts" the set of input. This is necessary to make unbounded variables work. For example:
+
+```Modusfile
+rust_channel(channel) :-
+  channel = "stable"; channel = "nightly"; channel = "beta".
+
+# or
+
+rust_channel("stable").
+rust_channel("nightly").
+rust_channel("beta").
+
+my_app(channel) :-
+  from("rust:alpine"),
+  rust_channel(channel),
+  run(f"rustup run ${channel} cargo build").
+```
+
+Without `rust_channel(channel)`, the query `my_app(X)` would fail, because it is not possible to build an infinite set of images. With the predicate to limit the values of `X`, a query like `my_app(X)` will build 3 images, each with a different version of rust.
+
+## Where to go from here&hellip;
+
+Now that you have learned the basics of Modus, you can go ahead and read the rest of the documentation, which dive deeper into how everything works exactly (groundness, predicate kinds, etc), as well as other built-in predicates and operators like `number_{gt,lt,eq,geq,leq}`, string parsing and manipulation, operators to set environment variables, temproarily changing the working directory with `in_workdir`, squashing image layers with `::merge`, etc.
 
 [^x86_why]: As part of the buildkit integration Modus will fetch pre-built images from Docker Hub, and we currently only build images for x86_64. Supports for other architectures will be added in the future.
