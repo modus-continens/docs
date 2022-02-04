@@ -8,7 +8,7 @@ You can install Modus from crates.io:
 cargo install modus
 ```
 
-Currently Modus is only available on Linux, and only officially support x86_64[^x86_why].
+Currently, Modus is only available on Linux, and only officially supports x86_64[^x86_why].
 
 <!-- TODO: release this crate -->
 
@@ -16,7 +16,7 @@ You can also build Modus from source by cloning [the repository](https://github.
 
 ## Your first Modusfile
 
-Modusfiles are our version of Dockerfiles. They are a collection of rules that determine how images are built. The syntax is an extension of [Datalog](https://en.wikipedia.org/wiki/Datalog) (which is itself a subset of Prolog), but you do not need to know either of those languages to write your own Modusfile.
+Modusfiles are our version of Dockerfiles. They are a collection of rules that specify how to build images. The syntax is an extension of [Datalog](https://en.wikipedia.org/wiki/Datalog) (which is itself a subset of Prolog), but you do not need to know either of those languages to write your own Modusfile.
 
 For this tutorial, we will demostrate how to use Modus to build a simple rust application. We have one slightly uncommon requirement though: **we need to build separate debug and release images**. This could be useful for a number of pratical reasons, but consider how you would do this with Dockerfiles: you would either need two separate Dockerfiles, each building one version, or do something with build arguments. It may not be a problem if you only have debug and release images, but it quickly become hard to manage, especially if you need to take separate steps depending on some arguments.
 
