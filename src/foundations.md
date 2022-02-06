@@ -1,8 +1,14 @@
-# Static
+# Foundations
 
-Modus represents build rules as [Horn clauses](https://en.wikipedia.org/wiki/Horn_clause), logical formulas in the form \\( u \leftarrow (p \wedge q\ \wedge ... \wedge\ t) \\). Container images correspond to logical facts; build rules are logical rules that derive new facts from existing facts. To build an image or a set of images, the user specifies a query, which is an image expression<!-- (see [Predicate Kinds](../syntax.md#predicate-kinds)) FIXME -->.
+This section discusses theoretical foundations of Modus. Modus can be used without Understanding these foundations.
 
-For a given build script (a sequence of rules and facts) and a query, the static semantics is the optimal proof of the query from the given facts using the given rules.
+## Build Model
+
+A [Docker/OSI container image](https://opencontainers.org/) consists of a set of layers combined using a [union mount filesystem](https://en.wikipedia.org/wiki/Union_mount). To build an image, the user specifies the parent image and defines operations that are executed on top of the parent image to form new layers. The most common operations are copying local files into the container and executing shell commands. Another important operation which enables [multi-stage builds](https://docs.docker.com/develop/develop-images/multistage-build/) is copying files from another image. A multi-stage build can be visualised as the following graph. Each instruction in this graph creates a new filesystem layer. Instructions are specified using Dockerfile's notation: `FROM` defines the parent image, `COPY` copies local files, `RUN` executes shell command, and `COPY --from` copies files from another container.
+
+![Container Image Build Model](build_model.svg)
+
+The key insight of Modus is that this build modus naturally maps to [Horn clauses](https://en.wikipedia.org/wiki/Horn_clause), logical formulas in the form \\( u \leftarrow (p \wedge q\ \wedge ... \wedge\ t) \\). Particularly, container images correspond to logical facts, build rules are logical rules that derive new facts from existing facts, and the build graph is the minimal proof of the fact representing the build target from the facts representing existing images.
 
 Consider the following recursive build script:
 
@@ -30,7 +36,9 @@ a("development")
 
 The subtree `a("development")` of the two trees is shared; it is only built once.
 
-Datalog is a specific kind of Horn clauses with specific semantics. To use Modus, the knowledge of Datalog is not required. However, to understand the semantics of Modus precisely, it is recommended to consult the following article:
+## Datalog
+
+Datalog is a specific kind of Horn clauses with specific semantics. A good overview of Datalog is given in the following article:
 
 _What You Always Wanted to Know About Datalog (And Never Dared to Ask)_<br>
 Stefano Ceri, Georg Gottlob, Letizia Tanca<br>
@@ -42,7 +50,7 @@ Modus uses Datalog for several reasons:
 - Datalog is expressive;
 - in Datalog, the generation of minimal proofs is decidable.
 
-Note that there is no fundamental connection between Datalog's expressive power and container builds. In fact, the expressiveness of the standard Datalog is not sufficient to conveniently express some natural build scenarios. For this reason, Modus supports two extensions, namely builtin predicates described in [Predicates](../library/predicates/README.md) and non-grounded variables. To realise these extensions, Modus uses a custom top-down Datalog solver for generating proofs.
+Thus, Datalog presents a sweet spot between expressiveness and computatibility, which is important for a build system. Note that there is no fundamental connection between Datalog's expressive power and container builds. In fact, the expressiveness of the standard Datalog is not sufficient to conveniently express some natural build scenarios. For this reason, Modus supports two extensions, namely builtin predicates described in [Predicates](./library/predicates/README.md) and non-grounded variables. To realise these extensions, Modus uses a custom top-down Datalog solver for generating proofs.
 
 ### Non-Grounded Variables
 
@@ -72,7 +80,7 @@ For the later script, the query `a(X)` will results in two images: `a("-g")` and
 
 In the standard Datalog, only the second variant is possible, because all variables have to be grounded (variables apearing in the head of a rule should also appear in the body, not in builtin predicates). However, specifying all possible values of all parameters is inconvenient. For this reason, Modus supports non-grounded variables. Specifically, it will make the best effort to initialise each variable in the rule before returning an error.
 
-Builtin predicates in Modus has Prolog-like signatures that specify which parameters have to be initialised (see [Predicates](../library/predicates/README.md)). <!-- FIXME: https://github.com/rust-lang/mdBook/issues/984 -->
+Builtin predicates in Modus has Prolog-like signatures that specify which parameters have to be initialised (see [Predicates](./library/predicates/README.md)). <!-- FIXME: https://github.com/rust-lang/mdBook/issues/984 -->
 For user-defined predicates, variables which does not appear in the body always has to be initialised before the rule can be applied. For example, for the script:
 
 ```
@@ -80,19 +88,6 @@ a(X) :- from("alpine"), run("echo Hello")
 ```
 
 A query like `a("foo")` where `foo` is any string constant would build the same image, but a query like `a(X)` is simply not allowed. This allows each resulting image to be mapped to a constant literal like `a("foo")`.
-
-### Predicate Kinds
-
-All predicates in Modus belong to one of the three kinds: image predicates, layer predicates and logic predicates.
-
-[Image predicates](../library/predicates/image.md) create new images. Examples of such are the builtin `from`, as well as any predicates that adds further layers upon a `from`.
-
-[Layer predicates](../library/predicates/layer.md) adds new layers on tops of an image, and can not itself be built. Example include `run` or `copy`.
-
-[Logic predicates](../library/predicates/logic/README.md) does neither, can be used anywhere, but can not be built on its own.
-
-The kind of a predicate determines where it can be used. For example, a rule body can not contain more than one image predicates, nor can layer predicates appear before image predicates. The kind of a user-defined predicate is inferred automatically, while the kind of a builtin predicate is documented in the [library section](../library/README.md).
-
 
 ### Proof Optimality
 
