@@ -2,6 +2,13 @@
 
 This section discusses theoretical foundations of Modus. Modus can be used without Understanding these foundations.
 
+## Design Principles
+
+- _Maintainability_: make build definitions maintainable by enabling modularity, code reuse and dependency resolution.
+- _Efficiency_: make builds efficient by automatic parallelisation and fine-grained caching; provide tools for optimising the image size.
+- _Expressiveness_: enable the user to express complex build workflows.
+- _Simplicity_: provide minimalistic syntax and well-defined, non-Turing-complete semantics for build definitions.
+
 ## Build Model
 
 A [Docker/OSI container image](https://opencontainers.org/) consists of a set of layers combined using a [union mount filesystem](https://en.wikipedia.org/wiki/Union_mount). To build an image, the user specifies the parent image and defines operations that are executed on top of the parent image to form new layers. The most common operations are copying local files into the container and executing shell commands. Another important operation which enables [multi-stage builds](https://docs.docker.com/develop/develop-images/multistage-build/) is copying files from another image. A multi-stage build can be visualised as the following graph. Each instruction in this graph creates a new filesystem layer. Instructions are specified using Dockerfile's notation: `FROM` defines the parent image, `COPY` copies local files, `RUN` executes shell command, and `COPY --from` copies files from another container.
