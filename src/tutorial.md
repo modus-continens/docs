@@ -14,13 +14,9 @@ Currently, Modus is only available on Linux, and only officially supports x86_64
 
 You can also build Modus from source by cloning [the repository](https://github.com/modus-continens/modus) and running `cargo build`.
 
-## Your first Modusfile
+## Your First Modusfile
 
-Modusfiles are our version of Dockerfiles. They are a collection of rules that specify how to build images. The syntax is an extension of [Datalog](https://en.wikipedia.org/wiki/Datalog) (which is itself a subset of Prolog), but you do not need to know either of those languages to write your own Modusfile.
-
-For this tutorial, we will demostrate how to use Modus to build a simple rust application. We have one slightly uncommon requirement though: **we need to build separate debug and release images**. This could be useful for a number of pratical reasons, but consider how you would do this with Dockerfiles: you would either need two separate Dockerfiles, each building one version, or do something with build arguments. It may not be a problem if you only have debug and release images, but it quickly become hard to manage, especially if you need to take separate steps depending on some arguments.
-
-To do the same with Modus, you would probably start with the following Modusfile:
+Modusfiles are our version of Dockerfiles. They are a collection of rules that specify how to build images. We now demostrate how to use Modus to build a simple rust application.
 
 ```Modusfile
 my_app(profile) :-
@@ -36,23 +32,25 @@ cargo_build("release") :- run("cargo build --release"). # RUN cargo build --rele
 
 Assuming that you are familiar with Dockerfiles, the meaning of the above Modusfile should be mostly easy to guess. In particular:
 
+* The syntax is an extension of [Datalog](https://en.wikipedia.org/wiki/Datalog) (which is itself a subset of Prolog), but you do not need to know either of those languages to write your own Modusfile.
+
 * Line-comments starts with `#`. In the above case, the equivalent instructions in Dockerfile have been written out for clarity using comments.
 
-* Modusfile consists of a series of rules of the form `HEAD :- BODY.`, where *HEAD* is a single literal, and *BODY* is an expression involving other literals. **Note that the `.` in the end denotes the end of the rule, and is a required part of the syntax.**
+* Modusfile consists of a series of rules of the form `HEAD :- BODY.`, where `HEAD` is a single literal, and `BODY` is an expression involving other literals. **Note that the `.` at the end denotes the end of the rule, and is a required part of the syntax.**
 
-* A literal has the form `foo(arg1, arg2, ...)` where `foo` is the name of the predicate you are referring to, and `arg1`, `arg2`, etc. are arguments. Examples of literals in the above file are `my_app("debug")`, `from("rust")`, etc. Literals can also have no parameters, in which case you omit the parenthesis, like `my_app`.
+* A literal has the form `foo(arg1, arg2, ...)` where `foo` is the name of the predicate, and `arg1`, `arg2`, etc. are arguments. Examples of literals in the above file are `my_app("debug")`, `from("rust")`. Literals can also have no parameters, in which case you omit the parenthesis, like `my_app`.
 
-* Expression uses `,` to denote logical "and", and `;` to denote logical "or". Expressions can be nested with `()`, and can also have "`::`" operators which may change the behaviour of the modified expression in some way. We will learn more about the logical aspect of Modus in a later section, but for now just think of `a, b` as "do `a` then `b`", and think of `a; b` as "do either of `a` or `b`, whichever works".
+* Expression uses `,` to denote logical "and", and `;` to denote logical "or". Expressions can be nested with `()`, and can also have "`::`" operators that may change the behaviour of the modified expression in some way. A later section will discuss logic in Modus in more detail, but for now just think of `a, b` as "do `a` then `b`", and think of `a; b` as "do either of `a` or `b`, whichever works".
 
-Note that instead of writing `run("cargo build")` directly in `my_app`, we used a custom rule `cargo_build` which we defined later, and when defining `cargo_build`, we have separate definition for when the argument is `dev` and when it is `release`. To make this clearer, consider the line
+Note that instead of writing `run("cargo build")` directly in `my_app`, we used a custom rule `cargo_build`, which we defined later, and, when defining `cargo_build`, we have separate definition for when the argument is `dev` and when it is `release`. To make this clearer, consider the line
 
 ```Modusfile
 cargo_build("debug") :- run("cargo build").
 ```
 
-What this means is that `run("cargo build")` *implies* (\\(\Rightarrow\\)) `cargo_build("debug")`. Given this definition, whenever Modus sees `cargo_build("debug")`, it will know to replace that with `run("cargo build")`.
+What this means is that `run("cargo build")` logically implies `cargo_build("debug")`. Given this definition, whenever Modus sees `cargo_build("debug")`, Modus replaces it with `run("cargo build")`.
 
-Also note the operators `set_workdir` and `set_entrypoint` which are applied to other expressions. The `set_workdir` operator takes in a path, and set the working directory property of the image being operated on. This will affect future resolution of relative paths, such as in the destination argument of `copy`. `set_entrypoint` simply overrides the entrypoint of an image.
+The `set_workdir` operator takes in a path, and sets the working directory of its image operand. This changes subsequent resolution of relative paths, such as in the destination argument of `copy`. `set_entrypoint` simply overrides the entrypoint of an image.
 
 To build a Modusfile, you just need to use the "`modus build`" command. The usage is fairly similar to `docker build`:
 
@@ -60,11 +58,9 @@ To build a Modusfile, you just need to use the "`modus build`" command. The usag
 modus build [-f <Modusfile>] <CONTEXT> <QUERY>
 ```
 
-**CONTEXT** is a directory containing any source file that you want to make available to Docker, just like the context directory in `docker build`. **QUERY** is a literal denoting what you want to build. You can use "`-f <Modusfile>`" to specify the Modusfile to build, and the default is `Modusfile` in the context directory.
+`CONTEXT` is a directory containing any source file that you want to make available to Docker, just like the context directory in `docker build`. `QUERY` is a literal denoting what you want to build. You can use "`-f <Modusfile>`" to specify the Modusfile to build, and the default is `Modusfile` in the context directory.
 
-In our case, we can use `my_app("debug")` as our query in order to build a debug image. However, we can also specify unbounded variables in our query. If we simply use `my_app(X)` as our query, **Modus will build two images in parallel** for us, one being the debug image and the other being the release image. You can think of it as saying "For all X, as long as `my_app(X)` can be proven, build it". You can also go a step further and add parameters to select the rust channel, base distributions, etc.
-
-You can't specify a default to these parameters, but you can define versions of `my_app` which takes different numbers (including zero) of parameters, to simulate having a default. For example, by adding:
+In our case, we can use `my_app("debug")` as our query in order to build a debug image. However, we can also specify unbounded variables in our query. If we simply use `my_app(X)` as our query, **Modus will build two images in parallel** for us, one being the debug image and the other being the release image. You can think of it as saying "For all X, as long as `my_app(X)` generates a valid image, build it". You can also go a step further and add parameters to select the rust channel, base distributions, etc. You can't specify a default for these parameters, but you can define versions of `my_app` that takes different numbers (including zero) of parameters, to simulate having a default. For example, by adding:
 
 ```Modusfile
 my_app :- my_app("release").
@@ -72,7 +68,9 @@ my_app :- my_app("release").
 
 The query `my_app` will now build the release version, while you can still use `my_app("debug")` to build the debug version.
 
-## Intermediate build stages
+The attentive reader will have noticed that our Modusfile builds both a debug and a release image. Consider how you would do this with Dockerfiles &mdash; you would either need two separate Dockerfiles, each building one version, or do something with build arguments. It may not be a problem if you only have debug and release images, but it quickly become hard to manage, especially if you need to take separate steps depending on some arguments.
+
+## Intermediate Build Stages
 
 For our next step, we want to reduce the size of the final image by building the rust code in a separate stage, then starting a new image and copying the binary inside. This can be easily implemented in Modusfile as well. We will just need to add the following lines to our existing Modusfile, and use `trimmed_app` as our query instead:
 
