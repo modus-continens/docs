@@ -36,7 +36,7 @@ Assuming that you are familiar with Dockerfiles, the meaning of the above Modusf
 
 * Line-comments starts with `#`. In the above case, the equivalent instructions in Dockerfile have been written out for clarity using comments.
 
-* Modusfile consists of a series of rules of the form `HEAD :- BODY.`, where `HEAD` is a single literal, and `BODY` is an expression involving other literals. **Note that the `.` at the end denotes the end of the rule, and is a required part of the syntax.**
+* Modusfile consists of a series of rules of the form `HEAD :- BODY.`, where `HEAD` is a single literal, and `BODY` is an expression involving other literals.
 
 * A literal has the form `foo(arg1, arg2, ...)` where `foo` is the name of the predicate, and `arg1`, `arg2`, etc. are arguments. Examples of literals in the above file are `my_app("debug")`, `from("rust")`. Literals can also have no parameters, in which case you omit the parenthesis, like `my_app`.
 
