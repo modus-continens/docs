@@ -19,7 +19,7 @@ The key insight of Modus is that this build modus naturally maps to [Horn clause
 
 Consider the following recursive build script:
 
-```
+```Modusfile
 a(mode) :- (
         mode = "production", from("alpine"), a("development")::copy("/app", "/app");
         mode = "development", from("gcc"), copy(".", "/app"), run("cd /app && make")
@@ -63,7 +63,7 @@ Thus, Datalog presents a sweet spot between expressiveness and computatibility, 
 
 Modus extends Datalog with non-grounded variables. To illustrate this extension, consider the following build script:
 
-```
+```Modusfile
 a(cflags) :-
     from("gcc:latest"),
     copy(".", "."),
@@ -72,7 +72,7 @@ a(cflags) :-
 
 If the user specifies the query `a("-g")`, then Modus will build an image with a binary compiled with debug symbols. However, for the query `a(X)`, Modus will return an error, because the compilation flags `cflags` cannot be inferred from build definitions. This problem can be solved by, for example, adding possible compilation flags using a dedicated predicate:
 
-```
+```Modusfile
 supported_flags("-g").
 supported_flags("").
 
@@ -90,7 +90,7 @@ In the standard Datalog, only the second variant is possible, because all variab
 Builtin predicates in Modus has Prolog-like signatures that specify which parameters have to be initialised (see [Predicates](./library/predicates/README.md)). <!-- FIXME: https://github.com/rust-lang/mdBook/issues/984 -->
 For user-defined predicates, variables which does not appear in the body always has to be initialised before the rule can be applied. For example, for the script:
 
-```
+```Modusfile
 a(X) :- from("alpine"), run("echo Hello")
 ```
 
@@ -102,7 +102,7 @@ Modus searches for the optimal proof, that is the proof with minimal cost. The c
 
 To illustrate proof optimality, consider again this build script:
 
-```
+```Modusfile
 a(mode) :- (
         mode = "production", from("alpine"), a("development")::copy("/app", "/app");
         mode = "development", from("gcc"), copy(".", "/app"), run("cd /app && make")
@@ -122,7 +122,7 @@ a("production")
 
 However, if we add a new rule that uses a cached development image from a registry
 
-```
+```Modusfile
 a("development") :- from("myregistry.domain.com/app:1.1-dev").
 ```
 
@@ -139,13 +139,13 @@ because this tree involves fewer layer operations than the original one.
 
 There may be situations when several minimal proofs of the same cost exist. In this case, Modus chooses one in an unspecified way. Although Modus is deterministic, reordering rules may cause Modus to generate a different minimal proof. To avoid non-determinism, it is recommend to avoid rules with uncontrolled choice:
 
-```
+```Modusfile
 a :- b; c.
 ```
 
 Instead, this rule can be re-written with an auxiliary variable to control the choice:
 
-```
+```Modusfile
 a(choice) :-
     choice = "left", b;
     choice = "right", c.
