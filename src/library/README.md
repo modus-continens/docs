@@ -9,11 +9,11 @@ Modus standard library is a collection of builtin predicates and operators. Pred
 | [`from`](./predicates/image.md#from) | Image | Refer to existing local/registry image by its name |
 | [`run`](./predicates/layer.md#run) | Layer | Execute shell command |
 | [`copy`](./predicates/layer.md#copy) | Layer | Copy local file/directory |
-| [`number_eq`](./predicates/logic/number.md#number_eq) | Logic | `=` for numbers |
-| [`number_gt`](./predicates/logic/number.md#number_gt) | Logic | `>` for numbers |
-| [`number_lt`](./predicates/logic/number.md#number_lt) | Logic | `<` for numbers |
-| [`number_geq`](./predicates/logic/number.md#number_geq) | Logic | `>=` for numbers |
-| [`number_leq`](./predicates/logic/number.md#number_leq) | Logic | `<=` for numbers |
+| [`number_eq`](./predicates/logic/number.md) | Logic | `=` for numbers |
+| [`number_gt`](./predicates/logic/number.md) | Logic | `>` for numbers |
+| [`number_lt`](./predicates/logic/number.md) | Logic | `<` for numbers |
+| [`number_geq`](./predicates/logic/number.md) | Logic | `>=` for numbers |
+| [`number_leq`](./predicates/logic/number.md) | Logic | `<=` for numbers |
 | [`string_concat`](./predicates/logic/string.md#string_concat) | Logic | Concatenate strings |
 | [`string_length`](./predicates/logic/string.md#string_length) | Logic | Compute string length |
 | [`semver_eq`](./predicates/logic/semver.md#semver_eq) | Logic | `=` for SemVer versions |
@@ -43,24 +43,26 @@ Modus standard library is a collection of builtin predicates and operators. Pred
 
 Operators are predicates beginning with `::` which can be applied to a set of predicates.
 
-| Operator | Kind | Description |
-| - | - | - |
-| [`::copy`](./operators/image.md#copy) | Image | Copy file/directory to current image |
-| [`::set_user`](./operators/image.md#set_user) | Image | Set user |
-| [`::set_expose`](./operators/image.md#set_expose) | Image | Set exposed port |
-| [`::set_env`](./operators/image.md#set_env) | Image | Set environment variable |
-| [`::set_entrypoint`](./operators/image.md#set_entrypoint) | Image | Set entrypoint |
-| [`::set_cmd`](./operators/image.md#set_cmd) | Image | Set default arguments to entrypoint |
-| [`::set_volume`](./operators/image.md#set_volume) | Image | Set volume |
-| [`::set_workdir`](./operators/image.md#set_workdir) | Image | Set current working directory |
-| [`::set_label`](./operators/image.md#set_label) | Image | Add metadata to image |
-| [`::set_stopsignal`](./operators/image.md#set_stopsignal) | Image | Set stop signal |
-| [`::in_workdir`](./operators/image.md#in_workdir) | Layer | Specify working directory for layer commands |
-| [`::in_env`](./operators/image.md#in_env) | Layer | Specify environment variables for layer commands |
-| [`::merge`](./operators/image.md#arg) | Layer | Marge layers |
-| [`::max_number`](./operators/image.md#max_number) | Logic | Maximize given number |
+| Operator | From | To | Description |
+| - | - | - | - |
+| [`::copy`](./operators/image.md#copy) | Image | Layer | Copy file/directory to current image |
+| [`::set_env`](./operators/image.md#simple-set) | Image | Image | Set environment variable |
+| [`::set_entrypoint`](./operators/image.md#simple-set) | Image | Image | Set entrypoint |
+| [`::set_workdir`](./operators/image.md#simple-set) | Image | Image | Set current working directory |
+| [`::in_workdir`](./operators/layer.md#in_workdir) | Layers | Layers | Specify working directory for layer commands |
+| [`::in_env`](./operators/layer.md#in_env) | Layers | Layers | Specify environment variables for layer commands |
+| [`::merge`](./operators/layer.md#merge) | Layers | Layer | Marge layers |
+
+<!-- | [`::set_user`](./operators/image.md#set_user) | Image | Set user | -->
+<!-- | [`::set_expose`](./operators/image.md#set_expose) | Image | Set exposed port | -->
+<!-- | [`::set_cmd`](./operators/image.md#set_cmd) | Image | Set default arguments to entrypoint | -->
+<!-- | [`::set_volume`](./operators/image.md#set_volume) | Image | Set volume | -->
+<!-- | [`::set_label`](./operators/image.md#set_label) | Image | Add metadata to image | -->
+<!-- | [`::set_stopsignal`](./operators/image.md#set_stopsignal) | Image | Set stop signal | -->
+
+<!-- | [`::max_number`](./operators/image.md#max_number) | Logic | Maximize given number |
 | [`::min_number`](./operators/image.md#min_number) | Logic | Minimize given number |
 | [`::max_string`](./operators/image.md#max_string) | Logic | Maximize given string |
 | [`::min_string`](./operators/image.md#min_string) | Logic | Minimize given string |
 | [`::max_semver`](./operators/image.md#max_string) | Logic | Maximize given SemVer version |
-| [`::min_semver`](./operators/image.md#min_string) | Logic | Minimize given SemVer version |
+| [`::min_semver`](./operators/image.md#min_string) | Logic | Minimize given SemVer version | -->

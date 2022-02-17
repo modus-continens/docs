@@ -19,6 +19,5 @@
   - [Operators]()
     - [Image](./library/operators/image.md)
     - [Layer](./library/operators/layer.md)
-    - [Logic](./library/operators/logic.md)
 - [Foundations](./foundations.md)
 - [Command Line Tool](cli/README.md)
