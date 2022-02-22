@@ -155,6 +155,35 @@
 </ol>
 <p>The build DAG is a graph that describes dependencies between build operations. It is a DAG, and not a set of trees, because some intermediate images can be shared and built only once. The DAG is computed by a Datalog solver as the minimal proof of the build target from true facts representing either existing images, or intrinsics like <code>run</code> which add build steps. The build DAG is constructed statically, i.e. the values of the variables do not depend on the results of build execution. Particularities of DAG construction are described in <a href="./static.html">Static</a>.</p>
 <p>After the build DAG is computed, it is transformed into a <a href="https://github.com/moby/buildkit">BuildKit</a> representation. Then, BuildKit executes build subtrees in parallel to construct the target images. Particularities of build execution are described in <a href="./runtime.html">Runtime</a>.</p>
+<h2 id="negation"><a class="header" href="#negation">Negation</a></h2>
+<p>Expressions can be negated, which acts as a logical check. Here are some examples of expressions using negation:</p>
+<ul>
+<li><code>!(a(X), b)</code></li>
+<li><code>!(foo(X) ; bar(Y) ; !baz(X)), lit(X)</code>
+Note that X is constrained with all of <code>foo(X)</code>, the nested negation <code>baz(X)</code> and the 
+positive literal <code>lit(X)</code>.</li>
+</ul>
+<p>A negated expression asserts that the positive expression fails to be proved, i.e. we cannot 
+construct a proof tree of it.
+The variables of a negated expression must be grounded (e.g. through some other literal) or must be 
+an anonymous variable.</p>
+<p>This is an example of a Modusfile using negation:</p>
+<pre><code>app(X) :-
+    (
+        windows(X),
+        from(&quot;jturolla/failing-container&quot;)
+    ;
+        !windows(X),
+        from(X),
+        run(&quot;echo hello-world&quot;)
+    ).
+    
+windows(&quot;...&quot;).
+</code></pre>
+<p>Usually, negation can be thought of as falsehood, however, there is an important distinction between proving
+falsehood and <em>Negation as Failure</em> (NAF). 
+If the fact <code>windows(c1).</code> is not present (for some constant <code>c1</code>), we say <code>!windows(c1)</code> succeeds.
+So we are not truly <em>inferring</em> <code>!windows(c1)</code>.</p>
 
                     </main>
 

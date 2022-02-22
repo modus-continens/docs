@@ -280,6 +280,35 @@ my_app(channel) :-
 </ol>
 <p>The build DAG is a graph that describes dependencies between build operations. It is a DAG, and not a set of trees, because some intermediate images can be shared and built only once. The DAG is computed by a Datalog solver as the minimal proof of the build target from true facts representing either existing images, or intrinsics like <code>run</code> which add build steps. The build DAG is constructed statically, i.e. the values of the variables do not depend on the results of build execution. Particularities of DAG construction are described in <a href="./static.html">Static</a>.</p>
 <p>After the build DAG is computed, it is transformed into a <a href="https://github.com/moby/buildkit">BuildKit</a> representation. Then, BuildKit executes build subtrees in parallel to construct the target images. Particularities of build execution are described in <a href="./runtime.html">Runtime</a>.</p>
+<h2 id="negation"><a class="header" href="#negation">Negation</a></h2>
+<p>Expressions can be negated, which acts as a logical check. Here are some examples of expressions using negation:</p>
+<ul>
+<li><code>!(a(X), b)</code></li>
+<li><code>!(foo(X) ; bar(Y) ; !baz(X)), lit(X)</code>
+Note that X is constrained with all of <code>foo(X)</code>, the nested negation <code>baz(X)</code> and the 
+positive literal <code>lit(X)</code>.</li>
+</ul>
+<p>A negated expression asserts that the positive expression fails to be proved, i.e. we cannot 
+construct a proof tree of it.
+The variables of a negated expression must be grounded (e.g. through some other literal) or must be 
+an anonymous variable.</p>
+<p>This is an example of a Modusfile using negation:</p>
+<pre><code>app(X) :-
+    (
+        windows(X),
+        from(&quot;jturolla/failing-container&quot;)
+    ;
+        !windows(X),
+        from(X),
+        run(&quot;echo hello-world&quot;)
+    ).
+    
+windows(&quot;...&quot;).
+</code></pre>
+<p>Usually, negation can be thought of as falsehood, however, there is an important distinction between proving
+falsehood and <em>Negation as Failure</em> (NAF). 
+If the fact <code>windows(c1).</code> is not present (for some constant <code>c1</code>), we say <code>!windows(c1)</code> succeeds.
+So we are not truly <em>inferring</em> <code>!windows(c1)</code>.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="predicates"><a class="header" href="#predicates">Predicates</a></h1>
 <p>Predicate are used to encapsulate build logic. Predicates in Modus belong to one of the three kinds: image predicates, layer predicates and logic predicates. <a href="library/predicates/./image.html">Image predicates</a> create new images, e.g. the predicate <code>from</code>, as well as any predicates that adds further layers upon a <code>from</code>. <a href="library/predicates/./layer.html">Layer predicates</a> adds new layers on tops of an image, and can not itself be built, e.g. <code>run</code> or <code>copy</code>. <a href="library/predicates/./logic/README.html">Logic predicates</a> does neither, can be used anywhere, but can not be built on its own. The kind of a predicate determines where it can be used. For example, a rule body can not contain more than one image predicates, nor can layer predicates appear before image predicates. The kind of a user-defined predicate is inferred automatically, while the kind of a builtin predicate is pre-defined.</p>
 <p>Builtin predicates have Prolog-like signatures that specify which parameters have to be initialised:</p>
