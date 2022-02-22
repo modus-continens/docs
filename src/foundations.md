@@ -1,6 +1,6 @@
 # Foundations
 
-This section discusses theoretical foundations of Modus. Modus can be used without Understanding these foundations.
+This section discusses theoretical foundations of Modus. Note the understanding these foundations is not required to use Modus.
 
 ## Design Principles
 

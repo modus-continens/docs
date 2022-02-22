@@ -4,9 +4,11 @@
 
   Existing files already in the current image will be overwritten in the new layer, and directories will be copied recursively. Any non-existant parent directories will be created.
 
-  This is equivalent to `COPY --from=src_image` in Dockerfile. Following Docker's behavior, if `src` is a directory, **the content of `src`** is copied into `dst`, but not `src` itself. This means that `copy("dir", "/")` basically means `cp -r dir/* /`.
+  This is equivalent to `COPY --from=src_image` in Dockerfile. Following Docker's behavior, if `src` is a directory, the content of `src` is copied into `dst`, but not `src` itself. This means that `copy("dir", "/")` is equivalent to `cp -r dir/* /`.
 
   If `src` is a relative path, it is resolved based on the source image's working directory. If `dst` is a relative path, it is resolved based on the current image's working directory.
+  
+- <a name="append-path"></a>`::append_path(+path)`: append string to the PATH environment variable.
 
 - <a name="simple-set"></a>`::set_env(+key, +value)`, `::set_entrypoint(+bin)`, `::set_workdir(+dir)`: Set image properties.
 

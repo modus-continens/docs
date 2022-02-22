@@ -98,7 +98,7 @@ trimmed_app(profile) :-
 
 Note that both `source` and `destination` can be relative paths. They will all be resolved sensibly based on respective the working directory.
 
-## Logics in Modus
+## Logic in Modus
 
 Not all predicates has to be about building. Since Modus is based on a logic programming language, it goes without saying that you can write more complicated Modusfile, which can do things like figure out which version of compiler to use depeneding on constraints on parameters, or take additional steps for debug builds, etc. Here is a quick rundown of some Modus patterns:
 
