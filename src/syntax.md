@@ -34,12 +34,14 @@ The body of a rule is an expression defined as follows:
                | <expression> "," <expression>
                | <expression> ";" <expression>
                | "(" <expression> ")"
+               | !<expression>
 ```
 
 A unification asserts the equality of two terms/variables:
 
 ```
 <unification> ::= ( <variable> | <term> ) "=" ( <variable> | <term> )
+                | ( <variable> | <term> ) "!=" ( <variable> | <term> )
 ```
 
 Operators have the same grammar as literals.
@@ -52,6 +54,8 @@ The following are examples of syntactically valid expressions:
 - `a::b`
 - `a, b("c")`
 - `(a; b), c`
+- `!(a(X), b(X))`
+- `"1.0.1" = version`
 
 ## Predicate Kinds
 
@@ -120,11 +124,13 @@ A _logic expression_ is defined as follows:
 - a unification is a logic expression;
 - an application of an operator to a logic expression (`<literal> "::" <operator>`) is a logic expression.
 - `<expression1> "," <expression2>` and `<expression1> ";" <expression2>` are logic expressions iff both `<expression1>` and `<expression2>` are logic expressions.
+- the negation of a logic expression
 
-In the following example, `a` is a logic predicate, and `b` is not:
+In the following example, `a` and `a_prime` are logic predicates, but `b` is not:
 
 ```
 a(Y) :- semver_geq(Y, "1.2.3").
+a_prime(Y) :- !a(Y).
     
 b(X) :- X = "a", from("ubuntu").
 ```
