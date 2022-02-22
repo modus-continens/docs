@@ -20,9 +20,16 @@ The key insight of Modus is that this build modus naturally maps to [Horn clause
 Consider the following recursive build script:
 
 ```Modusfile
-a(mode) :- (
-        mode = "production", from("alpine"), a("development")::copy("/app", "/app");
-        mode = "development", from("gcc"), copy(".", "/app"), run("cd /app && make")
+a(mode) :-
+    (
+        mode = "production",
+        from("alpine"),
+        a("development")::copy("/app", "/app")
+    ;
+        mode = "development",
+        from("gcc"),
+        copy(".", "/app"),
+        run("cd /app && make")
     )::set_workdir("/app").
 ```
 
@@ -103,9 +110,16 @@ Modus searches for the optimal proof, that is the proof with minimal cost. The c
 To illustrate proof optimality, consider again this build script:
 
 ```Modusfile
-a(mode) :- (
-        mode = "production", from("alpine"), a("development")::copy("/app", "/app");
-        mode = "development", from("gcc"), copy(".", "/app"), run("cd /app && make")
+a(mode) :-
+    (
+        mode = "production",
+        from("alpine"),
+        a("development")::copy("/app", "/app")
+    ;
+        mode = "development",
+        from("gcc"),
+        copy(".", "/app"),
+        run("cd /app && make")
     )::set_workdir("/app").
 ```
 
