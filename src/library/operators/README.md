@@ -11,7 +11,7 @@ Operators begin with `::`; they can be applied to expressions to control the bui
 | [`::append_path`](./image.md#append_path) | Image | Image | Append PATH variable |
 | [`::in_workdir`](./layer.md#in_workdir) | Layer | Layer | Specify working directory for layer commands |
 | [`::in_env`](./layer.md#in_env) | Layer | Layer | Specify environment variables for layer commands |
-| [`::merge`](./layer.md#merge) | Layer | Layer | Marge layers |
+| [`::merge`](./layer.md#merge) | Layer | Layer | Merge layers |
 
 <!-- | [`::set_user`](./operators/image.md#set_user) | Image | Set user | -->
 <!-- | [`::set_expose`](./operators/image.md#set_expose) | Image | Set exposed port | -->
