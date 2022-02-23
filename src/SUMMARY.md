@@ -2,8 +2,7 @@
 
 - [Introduction](./introduction.md)
 - [Tutorial](./tutorial.md)
-- [Syntax](./syntax/README.md)
-  - [Grammar](syntax/grammar.md)
+- [Syntax](./syntax.md)
 - [Semantics](./semantics.md)
 - [Library]()
   - [Predicates](./library/predicates/README.md)
