@@ -2,7 +2,7 @@
 
 ## Installation
 
-You can install Modus from crates.io:
+Modus requires at least the latest stable release of Rust. You can install Modus from crates.io:
 
 ```
 cargo install modus
