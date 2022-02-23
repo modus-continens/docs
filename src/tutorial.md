@@ -10,8 +10,6 @@ cargo install modus
 
 Currently, Modus is only available on Linux, and only officially supports x86_64[^x86_why].
 
-<!-- TODO: release this crate -->
-
 You can also build Modus from source by cloning [the repository](https://github.com/modus-continens/modus) and running `cargo build`.
 
 ## Your First Modusfile
@@ -21,12 +19,12 @@ Modusfiles are our version of Dockerfiles. They are a collection of rules that s
 ```Modusfile
 my_app(profile) :-
   (
-    from("rust:alpine")::set_workdir("/usr/src/app"), # FROM rust:alpine; WORKDIR /usr/src/app
-    copy(".", "."), # COPY . .
-    cargo_build(profile), # calling into another predicate
-  )::set_entrypoint(f"./target/${profile}/my_app"). # ENTRYPOINT ["./target/release/my_app"]
+    from("rust:alpine")::set_workdir("/usr/src/app"),   # FROM rust:alpine; WORKDIR /usr/src/app
+    copy(".", "."),                                     # COPY . .
+    cargo_build(profile)                                # calling into another predicate
+  )::set_entrypoint(f"./target/${profile}/my_app").     # ENTRYPOINT ["./target/release/my_app"]
 
-cargo_build("debug") :- run("cargo build"). # RUN cargo build
+cargo_build("debug") :- run("cargo build").             # RUN cargo build
 cargo_build("release") :- run("cargo build --release"). # RUN cargo build --release
 ```
 
@@ -60,7 +58,7 @@ modus build [-f <Modusfile>] <CONTEXT> <QUERY>
 
 `CONTEXT` is a directory containing any source file that you want to make available to Docker, just like the context directory in `docker build`. `QUERY` is a literal denoting what you want to build. You can use "`-f <Modusfile>`" to specify the Modusfile to build, and the default is `Modusfile` in the context directory.
 
-In our case, we can use `my_app("debug")` as our query in order to build a debug image. However, we can also specify unbounded variables in our query. If we simply use `my_app(X)` as our query, **Modus will build two images in parallel** for us, one being the debug image and the other being the release image. You can think of it as saying "For all X, as long as `my_app(X)` generates a valid image, build it". You can also go a step further and add parameters to select the rust channel, base distributions, etc. You can't specify a default for these parameters, but you can define versions of `my_app` that takes different numbers (including zero) of parameters, to simulate having a default. For example, by adding:
+In our case, we can use `my_app("debug")` as our query in order to build a debug image. However, we can also specify unbounded variables in our query. If we simply use `my_app(X)` as our query, Modus will build two images in parallel for us, one being the debug image and the other being the release image. You can think of it as saying "For all X, as long as `my_app(X)` generates a valid image, build it". You can also go a step further and add parameters to select the rust channel, base distributions, etc. You can't specify a default for these parameters, but you can define versions of `my_app` that takes different numbers (including zero) of parameters, to simulate having a default. For example, by adding:
 
 ```Modusfile
 my_app :- my_app("release").
