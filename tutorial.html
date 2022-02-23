@@ -153,18 +153,17 @@
 <pre><code>cargo install modus
 </code></pre>
 <p>Currently, Modus is only available on Linux, and only officially supports x86_64<sup class="footnote-reference"><a href="#x86_why">1</a></sup>.</p>
-<!-- TODO: release this crate -->
 <p>You can also build Modus from source by cloning <a href="https://github.com/modus-continens/modus">the repository</a> and running <code>cargo build</code>.</p>
 <h2 id="your-first-modusfile"><a class="header" href="#your-first-modusfile">Your First Modusfile</a></h2>
 <p>Modusfiles are our version of Dockerfiles. They are a collection of rules that specify how to build images. We now demostrate how to use Modus to build a simple rust application.</p>
 <pre><code class="language-Modusfile">my_app(profile) :-
   (
-    from(&quot;rust:alpine&quot;)::set_workdir(&quot;/usr/src/app&quot;), # FROM rust:alpine; WORKDIR /usr/src/app
-    copy(&quot;.&quot;, &quot;.&quot;), # COPY . .
-    cargo_build(profile), # calling into another predicate
-  )::set_entrypoint(f&quot;./target/${profile}/my_app&quot;). # ENTRYPOINT [&quot;./target/release/my_app&quot;]
+    from(&quot;rust:alpine&quot;)::set_workdir(&quot;/usr/src/app&quot;),   # FROM rust:alpine; WORKDIR /usr/src/app
+    copy(&quot;.&quot;, &quot;.&quot;),                                     # COPY . .
+    cargo_build(profile)                                # calling into another predicate
+  )::set_entrypoint(f&quot;./target/${profile}/my_app&quot;).     # ENTRYPOINT [&quot;./target/release/my_app&quot;]
 
-cargo_build(&quot;debug&quot;) :- run(&quot;cargo build&quot;). # RUN cargo build
+cargo_build(&quot;debug&quot;) :- run(&quot;cargo build&quot;).             # RUN cargo build
 cargo_build(&quot;release&quot;) :- run(&quot;cargo build --release&quot;). # RUN cargo build --release
 </code></pre>
 <p>Assuming that you are familiar with Dockerfiles, the meaning of the above Modusfile should be mostly easy to guess. In particular:</p>
@@ -194,7 +193,7 @@ cargo_build(&quot;release&quot;) :- run(&quot;cargo build --release&quot;). # RU
 <pre><code>modus build [-f &lt;Modusfile&gt;] &lt;CONTEXT&gt; &lt;QUERY&gt;
 </code></pre>
 <p><code>CONTEXT</code> is a directory containing any source file that you want to make available to Docker, just like the context directory in <code>docker build</code>. <code>QUERY</code> is a literal denoting what you want to build. You can use &quot;<code>-f &lt;Modusfile&gt;</code>&quot; to specify the Modusfile to build, and the default is <code>Modusfile</code> in the context directory.</p>
-<p>In our case, we can use <code>my_app(&quot;debug&quot;)</code> as our query in order to build a debug image. However, we can also specify unbounded variables in our query. If we simply use <code>my_app(X)</code> as our query, <strong>Modus will build two images in parallel</strong> for us, one being the debug image and the other being the release image. You can think of it as saying &quot;For all X, as long as <code>my_app(X)</code> generates a valid image, build it&quot;. You can also go a step further and add parameters to select the rust channel, base distributions, etc. You can't specify a default for these parameters, but you can define versions of <code>my_app</code> that takes different numbers (including zero) of parameters, to simulate having a default. For example, by adding:</p>
+<p>In our case, we can use <code>my_app(&quot;debug&quot;)</code> as our query in order to build a debug image. However, we can also specify unbounded variables in our query. If we simply use <code>my_app(X)</code> as our query, Modus will build two images in parallel for us, one being the debug image and the other being the release image. You can think of it as saying &quot;For all X, as long as <code>my_app(X)</code> generates a valid image, build it&quot;. You can also go a step further and add parameters to select the rust channel, base distributions, etc. You can't specify a default for these parameters, but you can define versions of <code>my_app</code> that takes different numbers (including zero) of parameters, to simulate having a default. For example, by adding:</p>
 <pre><code class="language-Modusfile">my_app :- my_app(&quot;release&quot;).
 </code></pre>
 <p>The query <code>my_app</code> will now build the release version, while you can still use <code>my_app(&quot;debug&quot;)</code> to build the debug version.</p>
