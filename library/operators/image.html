@@ -160,7 +160,8 @@
 </li>
 <li>
 <p><a name="simple-set"></a><code>::set_env(+key, +value)</code>, <code>::set_entrypoint(+bin)</code>, <code>::set_workdir(+dir)</code>: Set image properties.</p>
-<p><code>::set_workdir</code> also allows specifying a relative path based on the input image's working directory.</p>
+<p><code>::set_workdir</code> also allows specifying a relative path based on the input image's working directory. This will be resolved to an absolute path.</p>
+<p><code>::set_entrypoint</code> will clear any command the image has, to be consistent with the <code>ENTRYPOINT</code> command in Dockerfile.</p>
 </li>
 </ul>
 
