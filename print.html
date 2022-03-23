@@ -160,11 +160,7 @@
 <p>Modus uses semantic versioning; until version 1.0 is declared, breaking changes are possible. The current version, 0.1, is a preview release. We welcome bug reports and feature requests submitted through <a href="https://github.com/mechtaev/modus/issues">GitHub Issues</a>.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="tutorial"><a class="header" href="#tutorial">Tutorial</a></h1>
 <h2 id="installation"><a class="header" href="#installation">Installation</a></h2>
-<p>Modus requires at least the latest stable release of Rust. You can install Modus from crates.io:</p>
-<pre><code>cargo install modus
-</code></pre>
-<p>Currently, Modus is only available on Linux, and only officially supports x86_64<sup class="footnote-reference"><a href="#x86_why">1</a></sup>.</p>
-<p>You can also build Modus from source by cloning <a href="https://github.com/modus-continens/modus">the repository</a> and running <code>cargo build</code>.</p>
+<p>Follow the <a href="https://modus-continens.com/get.html">installation instructions</a> on the website to download and install Modus.</p>
 <h2 id="your-first-modusfile"><a class="header" href="#your-first-modusfile">Your First Modusfile</a></h2>
 <p>Modusfiles are our version of Dockerfiles. They are a collection of rules that specify how to build images. We now demostrate how to use Modus to build a simple rust application.</p>
 <pre><code class="language-Modusfile">my_app(profile) :-
@@ -266,9 +262,6 @@ my_app(channel) :-
 <p>Without <code>rust_channel(channel)</code>, the query <code>my_app(X)</code> would fail, because it is not possible to build an infinite set of images. With the predicate to limit the values of <code>X</code>, a query like <code>my_app(X)</code> will build 3 images, each with a different version of rust.</p>
 <h2 id="where-to-go-from-here"><a class="header" href="#where-to-go-from-here">Where to go from here…</a></h2>
 <p>Now that you have learned the basics of Modus, you can go ahead and read the rest of the documentation, which dive deeper into how everything works exactly (groundness, predicate kinds, etc), as well as other built-in predicates and operators like <code>number_{gt,lt,eq,geq,leq}</code>, string parsing and manipulation, operators to set environment variables, temproarily changing the working directory with <code>in_workdir</code>, squashing image layers with <code>::merge</code>, etc.</p>
-<div class="footnote-definition" id="x86_why"><sup class="footnote-definition-label">1</sup>
-<p>As part of the buildkit integration Modus will fetch pre-built images from Docker Hub, and we currently only build images for x86_64. Supports for other architectures will be added in the future.</p>
-</div>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="grammar"><a class="header" href="#grammar">Grammar</a></h1>
 <p>A Modus build srcipt is a sequence of facts and rules. A fact is of the form</p>
 <pre><code>&lt;fact&gt; ::= &lt;head&gt; &quot;.&quot;
