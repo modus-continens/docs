@@ -2,15 +2,7 @@
 
 ## Installation
 
-Modus requires at least the latest stable release of Rust. You can install Modus from crates.io:
-
-```
-cargo install modus
-```
-
-Currently, Modus is only available on Linux, and only officially supports x86_64[^x86_why].
-
-You can also build Modus from source by cloning [the repository](https://github.com/modus-continens/modus) and running `cargo build`.
+Follow the [installation instructions](https://modus-continens.com/get.html) on the website to download and install Modus.
 
 ## Your First Modusfile
 
@@ -140,5 +132,3 @@ Without `rust_channel(channel)`, the query `my_app(X)` would fail, because it is
 ## Where to go from here&hellip;
 
 Now that you have learned the basics of Modus, you can go ahead and read the rest of the documentation, which dive deeper into how everything works exactly (groundness, predicate kinds, etc), as well as other built-in predicates and operators like `number_{gt,lt,eq,geq,leq}`, string parsing and manipulation, operators to set environment variables, temproarily changing the working directory with `in_workdir`, squashing image layers with `::merge`, etc.
-
-[^x86_why]: As part of the buildkit integration Modus will fetch pre-built images from Docker Hub, and we currently only build images for x86_64. Supports for other architectures will be added in the future.
