@@ -24,5 +24,5 @@
       copy("./app", "/app"),
       copy("./entrypoint.sh", "/entrypoint.sh")
     )::set_entrypoint("/entrypoint.sh")
-     ::set_cmd(["start"])
+     ::set_cmd(["start"]).
   ```
