@@ -533,8 +533,9 @@ So we are not truly <em>inferring</em> <code>!windows(c1)</code>.</p>
 <tr><td><a href="library/operators/./image.html#copy"><code>::copy</code></a></td><td>Image</td><td>Layer</td><td>Copy file/directory to current image</td></tr>
 <tr><td><a href="library/operators/./image.html#simple-set"><code>::set_env</code></a></td><td>Image</td><td>Image</td><td>Set environment variable</td></tr>
 <tr><td><a href="library/operators/./image.html#simple-set"><code>::set_entrypoint</code></a></td><td>Image</td><td>Image</td><td>Set entrypoint</td></tr>
-<tr><td><a href="library/operators/./image.html#simple-set"><code>::set_cmd</code></a></td><td>Image</td><td>Image</td><td>Set image command</td></tr>
+<tr><td><a href="library/operators/./image.html#simple-set"><code>::set_cmd</code></a></td><td>Image</td><td>Image</td><td>Set image &quot;CMD&quot;</td></tr>
 <tr><td><a href="library/operators/./image.html#simple-set"><code>::set_workdir</code></a></td><td>Image</td><td>Image</td><td>Set current working directory</td></tr>
+<tr><td><a href="library/operators/./image.html#simple-set"><code>::set_user</code></a></td><td>Image</td><td>Image</td><td>Set user</td></tr>
 <tr><td><a href="library/operators/./image.html#append_path"><code>::append_path</code></a></td><td>Image</td><td>Image</td><td>Append PATH variable</td></tr>
 <tr><td><a href="library/operators/./layer.html#in_workdir"><code>::in_workdir</code></a></td><td>Layer</td><td>Layer</td><td>Specify working directory for layer commands</td></tr>
 <tr><td><a href="library/operators/./layer.html#in_env"><code>::in_env</code></a></td><td>Layer</td><td>Layer</td><td>Specify environment variables for layer commands</td></tr>
@@ -558,15 +559,15 @@ So we are not truly <em>inferring</em> <code>!windows(c1)</code>.</p>
 <p><a name="append-path"></a><code>::append_path(+path)</code>: append string to the PATH environment variable.</p>
 </li>
 <li>
-<p><a name="simple-set"></a><code>::set_env(+key, +value)</code>, <code>::set_entrypoint(+str_or_array)</code>, <code>::set_cmd(+array)</code>, <code>::set_workdir(+dir)</code>: Set image properties.</p>
+<p><a name="simple-set"></a><code>::set_env(+key, +value)</code>, <code>::set_entrypoint(+str_or_array)</code>, <code>::set_cmd(+array)</code>, <code>::set_workdir(+dir)</code>, <code>::set_user(+username)</code>: Set image properties.</p>
 <p><code>::set_workdir</code> also allows specifying a relative path based on the input image's working directory. This will be resolved to an absolute path.</p>
 <p><code>::set_entrypoint</code> will clear any command the image has, to be consistent with the <code>ENTRYPOINT</code> command in Dockerfile.</p>
 <p>Example:</p>
 <pre><code class="language-Modusfile">app :-
   (
     from(&quot;alpine&quot;),
-    copy(&quot;./app&quot;, &quot;/app&quot;),
-    copy(&quot;./entrypoint.sh&quot;, &quot;/entrypoint.sh&quot;)
+    copy(&quot;./app&quot;, &quot;/&quot;),
+    copy(&quot;./entrypoint.sh&quot;, &quot;/&quot;)
   )::set_entrypoint(&quot;/entrypoint.sh&quot;)
    ::set_cmd([&quot;start&quot;]).
 </code></pre>
