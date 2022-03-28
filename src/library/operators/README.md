@@ -7,8 +7,9 @@ Operators begin with `::`; they can be applied to expressions to control the bui
 | [`::copy`](./image.md#copy) | Image | Layer | Copy file/directory to current image |
 | [`::set_env`](./image.md#simple-set) | Image | Image | Set environment variable |
 | [`::set_entrypoint`](./image.md#simple-set) | Image | Image | Set entrypoint |
-| [`::set_cmd`](./image.md#simple-set) | Image | Image | Set image command |
+| [`::set_cmd`](./image.md#simple-set) | Image | Image | Set image "CMD" |
 | [`::set_workdir`](./image.md#simple-set) | Image | Image | Set current working directory |
+| [`::set_user`](./image.md#simple-set) | Image | Image | Set user |
 | [`::append_path`](./image.md#append_path) | Image | Image | Append PATH variable |
 | [`::in_workdir`](./layer.md#in_workdir) | Layer | Layer | Specify working directory for layer commands |
 | [`::in_env`](./layer.md#in_env) | Layer | Layer | Specify environment variables for layer commands |
