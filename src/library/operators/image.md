@@ -10,8 +10,19 @@
 
 - <a name="append-path"></a>`::append_path(+path)`: append string to the PATH environment variable.
 
-- <a name="simple-set"></a>`::set_env(+key, +value)`, `::set_entrypoint(+bin)`, `::set_workdir(+dir)`: Set image properties.
+- <a name="simple-set"></a>`::set_env(+key, +value)`, `::set_entrypoint(+str_or_array)`, `::set_cmd(+array)`, `::set_workdir(+dir)`: Set image properties.
 
   `::set_workdir` also allows specifying a relative path based on the input image's working directory. This will be resolved to an absolute path.
 
   `::set_entrypoint` will clear any command the image has, to be consistent with the `ENTRYPOINT` command in Dockerfile.
+
+  Example:
+  ```Modusfile
+  app :-
+    (
+      from("alpine"),
+      copy("./app", "/app"),
+      copy("./entrypoint.sh", "/entrypoint.sh")
+    )::set_entrypoint("/entrypoint.sh")
+     ::set_cmd(["start"])
+  ```
