@@ -150,7 +150,7 @@
                         <h1 id="semver"><a class="header" href="#semver">SemVer</a></h1>
 <ul>
 <li>
-<p><a name="semver-op"></a> <code>semver_OP(+a, +b)</code>: compare semver versions, resolves if <code>a</code> OP <code>b</code> is true. Valid OPs are the same as those for <a href="number.html"><code>number_OP</code></a>.</p>
+<p><a name="semver-op"></a> <code>semver_OP(+a, +b)</code>: compare semver versions, resolves if <code>a</code> OP <code>b</code> is true. Valid OPs are the same as those for <a href="number.html"><code>number_OP</code></a>, except there is no <code>semver_eq</code>.</p>
 </li>
 <li>
 <p><a name="semver-exact"></a> <code>semver_exact(+a, +b)</code>:  <code>=I.J.K</code> means exactly the version <code>I.J.K</code>; <code>=I.J</code> means equivalent to <code>&gt;=I.J.0, &lt;I.(J+1).0</code>; <code>=I</code> means equivalent to <code>&gt;=I.0.0, &lt;(I+1).0.0</code>.</p>
