@@ -37,11 +37,11 @@ The body of a rule is an expression defined as follows:
                | !<expression>
 ```
 
-A unification asserts the equality of two terms/variables:
+A unification asserts the equality of two terms (which could be variables):
 
 ```
-<unification> ::= ( <variable> | <term> ) "=" ( <variable> | <term> )
-                | ( <variable> | <term> ) "!=" ( <variable> | <term> )
+<unification> ::= <term> "=" <term>
+                | <term> "!=" <term>
 ```
 
 Operators have the same grammar as literals.
