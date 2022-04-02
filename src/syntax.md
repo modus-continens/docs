@@ -37,11 +37,11 @@ The body of a rule is an expression defined as follows:
                | !<expression>
 ```
 
-A unification asserts the equality of two terms/variables:
+A unification asserts the equality of two terms (which could be variables):
 
 ```
-<unification> ::= ( <variable> | <term> ) "=" ( <variable> | <term> )
-                | ( <variable> | <term> ) "!=" ( <variable> | <term> )
+<unification> ::= <term> "=" <term>
+                | <term> "!=" <term>
 ```
 
 Operators have the same grammar as literals.
@@ -56,6 +56,47 @@ The following are examples of syntactically valid expressions:
 - `(a; b), c`
 - `!(a(X), b(X))`
 - `"1.0.1" = version`
+
+## Full EBNF
+
+```
+<fact> ::= <head> "."
+<rule> ::= <head> ":-" <body> "."
+<head> ::= <literal>
+<body> ::= <expression>
+<literal> ::= <identifier> "(" <arg_list> ")"
+            | <identifier>
+<operator> ::= <literal>
+<expression> ::= <literal>
+               | <unification>
+               | <expression> "::" <operator>
+               | <expression> "," <expression>
+               | <expression> ";" <expression>
+               | "(" <expression> ")"
+               | !<expression>
+<unification> ::= <term> "=" <term>
+                | <term> "!=" <term>
+
+<arg_list> ::= <term> { "," <term> }
+<term> ::= <variable> | '"' <char_string> '"' | <format_string_term>
+<variable> ::= <identifier>
+<format_string_term> ::= 'f"' { <char_string> | <interpolation> } '"'
+<interpolation> ::= "${" <variable> "}"
+
+<char_string> ::= { <char> }
+<identifier> ::= ( <letter> | "_" ) [ <alphanumeric_with_underscore> ]
+<alphanumeric_with_underscore> ::= { <letter> | <digit> | "_" }
+<alphanumeric> ::= { <letter> | <digit> }
+<letter> ::= "A" | "B" | "C" | "D" | "E" | "F" | "G"
+       | "H" | "I" | "J" | "K" | "L" | "M" | "N"
+       | "O" | "P" | "Q" | "R" | "S" | "T" | "U"
+       | "V" | "W" | "X" | "Y" | "Z" | "a" | "b"
+       | "c" | "d" | "e" | "f" | "g" | "h" | "i"
+       | "j" | "k" | "l" | "m" | "n" | "o" | "p"
+       | "q" | "r" | "s" | "t" | "u" | "v" | "w"
+       | "x" | "y" | "z"
+<digit> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+```
 
 ## Predicate Kinds
 
