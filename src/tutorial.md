@@ -6,7 +6,7 @@ Follow the [installation instructions](https://modus-continens.com/get.html) on 
 
 ## Your First Modusfile
 
-Modusfiles are our version of Dockerfiles. They are a collection of rules that specify how to build images. We now demostrate how to use Modus to build a simple rust application.
+Modusfiles are our version of Dockerfiles. They are a collection of rules that specify how to build images. We now demonstrate how to use Modus to build a simple rust application.
 
 ```Modusfile
 my_app(profile) :-
