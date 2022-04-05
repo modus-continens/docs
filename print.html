@@ -162,7 +162,7 @@
 <h2 id="installation"><a class="header" href="#installation">Installation</a></h2>
 <p>Follow the <a href="https://modus-continens.com/get.html">installation instructions</a> on the website to download and install Modus.</p>
 <h2 id="your-first-modusfile"><a class="header" href="#your-first-modusfile">Your First Modusfile</a></h2>
-<p>Modusfiles are our version of Dockerfiles. They are a collection of rules that specify how to build images. We now demostrate how to use Modus to build a simple rust application.</p>
+<p>Modusfiles are our version of Dockerfiles. They are a collection of rules that specify how to build images. We now demonstrate how to use Modus to build a simple rust application.</p>
 <pre><code class="language-Modusfile">my_app(profile) :-
   (
     from(&quot;rust:alpine&quot;)::set_workdir(&quot;/usr/src/app&quot;),   # FROM rust:alpine; WORKDIR /usr/src/app
