@@ -1,5 +1,8 @@
 # Command Line Tool
 
+The following screencast demonstrates a simple but complete workflow of proving, building, tagging and running images.
+[![asciicast](https://asciinema.org/a/DelA6wHXgWGaFUhPUnZAdFZDw.svg)](https://asciinema.org/a/DelA6wHXgWGaFUhPUnZAdFZDw)
+
 ## `modus build`
 
 Much like `docker build`, the `modus build` command builds a Modusfile.
@@ -55,3 +58,24 @@ modus build . 'all(X, "release")' --json | jq -r '.[] | .digest, ("modus/" + .ar
 Image resolution is done at the beginning of the build, and may involves fetching metadata (and downloading the image if necessary) from the repository. Image export is the very last step of any build process, and is usually disk IO-bound, although delay may be introduced by `docker build`.
 
 Defaults: `--image-export-concurrency=8`, `--image-resolve-concurrency=3`.
+
+## `modus proof`
+
+`modus proof` prints out proof trees based on some Modus facts/rules, and a provided goal.
+
+**Syntax**: `modus proof [options] <context> <query>`
+
+- `context` is a directory that should contain the Modusfile that contains the facts/rules.
+This is chosen to match the interface of `modus build`.
+- `query` specifies the goal to prove.
+
+**Options**:
+
+- `--compact`: Changes the output of proof trees, omitting logical rule resolution.
+- `-e, --explain`: Prints out a structured 'explanation' of the steps taken to prove `<query>` during
+SLD resolution. (See `-g` for a graphical version of this.)
+This may be verbose.
+- `-f <modusfile>`: Use the facts and rules of this Modusfile, instead of `<context>/Modusfile`.
+- `-g, --graph`: Outputs DOT source for a graph of the SLD tree. This can given to `dot -Tpng` to produce
+a PNG of the graph.
+Recommended over `-e` for larger Modusfiles.
