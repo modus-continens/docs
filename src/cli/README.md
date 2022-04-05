@@ -65,21 +65,17 @@ Defaults: `--image-export-concurrency=8`, `--image-resolve-concurrency=3`.
 
 **Syntax**: `modus proof [options] <context> <query>`
 
-`context` is a directory that should contain the Modusfile that contains the facts/rules.
+- `context` is a directory that should contain the Modusfile that contains the facts/rules.
 This is chosen to match the interface of `modus build`.
-
-`query` specifies the goal to prove.
+- `query` specifies the goal to prove.
 
 **Options**:
 
-`--compact`: Changes the output of proof trees, omitting logical rule resolution.
-
-`-e, --explain`: Prints out a structured 'explanation' of the steps taken to prove `<query>` during
+- `--compact`: Changes the output of proof trees, omitting logical rule resolution.
+- `-e, --explain`: Prints out a structured 'explanation' of the steps taken to prove `<query>` during
 SLD resolution. (See `-g` for a graphical version of this.)
 This may be verbose.
-
-`-f <modusfile>`: Use the facts and rules of this Modusfile, instead of `<context>/Modusfile`.
-
-`-g, --graph`: Outputs DOT source for a graph of the SLD tree. This can given to `dot -Tpng` to produce
+- `-f <modusfile>`: Use the facts and rules of this Modusfile, instead of `<context>/Modusfile`.
+- `-g, --graph`: Outputs DOT source for a graph of the SLD tree. This can given to `dot -Tpng` to produce
 a PNG of the graph.
 Recommended over `-e` for larger Modusfiles.
