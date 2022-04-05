@@ -1,7 +1,7 @@
 # Command Line Tool
 
 The following screencast demonstrates a simple but complete workflow of proving, building, tagging and running images.
-<script id="asciicast-DelA6wHXgWGaFUhPUnZAdFZDw" src="https://asciinema.org/a/DelA6wHXgWGaFUhPUnZAdFZDw.js" async></script>
+[![asciicast](https://asciinema.org/a/DelA6wHXgWGaFUhPUnZAdFZDw.svg)](https://asciinema.org/a/DelA6wHXgWGaFUhPUnZAdFZDw)
 
 ## `modus build`
 
