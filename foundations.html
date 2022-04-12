@@ -148,7 +148,7 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="foundations"><a class="header" href="#foundations">Foundations</a></h1>
-<p>Container images are build on top of other images or by copying information from other images. Therefore, the image construction problem can be viewed as the problem of resolving dependencies between container images. Modus concisely captures and resolves these dependencies using logic programming. This section discusses the logic programming foundations of Modus. You do not need to understand these foundations to use, and profit from, Modus.</p>
+<p>Container images are built on top of base images by copying information from other images and intacting with the environment. Modus uses decidable logic programming to concisely capture and efficiently resolve dependencies between images and to encapluate environmental interactions with predicates and operators. This section discusses the logic programming foundations of Modus. You do not need to understand these foundations to use, and profit from, Modus.</p>
 <h2 id="design-principles"><a class="header" href="#design-principles">Design Principles</a></h2>
 <ul>
 <li><em>Maintainability</em>: make build definitions maintainable by enabling modularity, code reuse and dependency resolution.</li>
@@ -157,9 +157,10 @@
 <li><em>Simplicity</em>: provide minimalistic syntax and well-defined, non-Turing-complete semantics for build definitions.</li>
 </ul>
 <h2 id="container-image-build-model"><a class="header" href="#container-image-build-model">Container Image Build Model</a></h2>
-<p>A <a href="https://opencontainers.org/">Docker/OSI container image</a> consists of a set of layers combined using a <a href="https://en.wikipedia.org/wiki/Union_mount">union mount filesystem</a>. To build an image, the user specifies the parent image and defines operations that are executed on top of the parent image to form new layers. The most common operations are copying local files into the container and executing shell commands. Another important operation which enables <a href="https://docs.docker.com/develop/develop-images/multistage-build/">multi-stage builds</a> is copying files from another image. A multi-stage build can be visualised as the following graph. Each instruction in this graph creates a new filesystem layer. Instructions are specified using Dockerfile's notation: <code>FROM</code> defines the parent image, <code>COPY</code> copies local files, <code>RUN</code> executes shell command, and <code>COPY --from</code> copies files from another container.</p>
+<p>A <a href="https://opencontainers.org/">Docker/OSI container image</a> consists of a set of layers combined using a <a href="https://en.wikipedia.org/wiki/Union_mount">union mount filesystem</a>. To build an image, the user specifies the parent image and defines operations that are executed on top of the parent image to form new layers. The most common operations are copying local files into the container and executing shell commands.</p>
+<p>Another important operation which enables <a href="https://docs.docker.com/develop/develop-images/multistage-build/">multi-stage builds</a> is copying files from another image. A multi-stage build can be visualised as the following graph. Each instruction in this graph creates a new filesystem layer. Instructions are specified using Dockerfile's notation: <code>FROM</code> defines the parent image, <code>COPY</code> copies local files, <code>RUN</code> executes shell command, and <code>COPY --from</code> copies files from another container.</p>
 <p><img src="build_model.svg" alt="Container Image Build Model" /></p>
-<p>The key insight of Modus is that this build model maps to <a href="https://en.wikipedia.org/wiki/Horn_clause">Horn clauses</a>, logical formulas in the form \( u \leftarrow (p \wedge q\ \wedge ... \wedge\ t) \). Particularly, container images correspond to logical facts, build rules are logical rules that derive new facts from existing facts, and the build graph is a minimal proof of the fact representing the build target from the facts representing existing images.</p>
+<p>The key insight of Modus is that the resolution of dependencies between images in this build model maps to <a href="https://en.wikipedia.org/wiki/Horn_clause">Horn clauses</a>, logical formulas in the form \( u \leftarrow (p \wedge q\ \wedge ... \wedge\ t) \). Particularly, container images correspond to logical facts, build rules are logical rules that derive new facts from existing facts, and the build graph is a minimal proof of the fact representing the build target from the facts representing existing images.</p>
 <p>Consider the following recursive build script:</p>
 <pre><code class="language-Modusfile">a(mode) :-
     (
@@ -187,7 +188,7 @@ a(&quot;development&quot;)
 </code></pre>
 <p>The subtree <code>a(&quot;development&quot;)</code> of the two trees is shared; it is only built once.</p>
 <h2 id="datalog"><a class="header" href="#datalog">Datalog</a></h2>
-<p>Datalog is a specific kind of Horn clauses. A good overview of Datalog is given in the following article:</p>
+<p>Datalog is a decidable fragment of Horn clauses. A good overview of Datalog is given in the following article:</p>
 <p><em><a href="https://ieeexplore.ieee.org/document/43410">What You Always Wanted to Know About Datalog (And Never Dared to Ask)</a></em><br>
 Stefano Ceri, Georg Gottlob, Letizia Tanca<br>
 IEEE TKDE 1989</p>
