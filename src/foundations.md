@@ -68,9 +68,17 @@ Modus uses Datalog because it is:
 
 Thus, Datalog presents a sweet spot between expressiveness and computatibility, which is important for a build system. Standard Datalog, despite its suitability for addressing their core dependency resolution problem, does not capture a container build environmental dependencies. To solve this problem, Modus extends Datalog with build-specific predicates and build parameters via ungrounded variables. Modus supports two Datalog extensions, namely builtin predicates described in [Predicates](./library/predicates/) and non-grounded variables. To realise these extensions, Modus uses a custom top-down Datalog solver for generating proofs.
 
+### Builtin Predicates
+
+Dependency resolution is only part of the story. Container builds must also interact with the environment. Predicates elegantly capture these interactions. We have equipped Modus with a library of built-in predicates to handle these interactions. For example, the `semver_*` predicates define software version comparison as per the (SemVer)[https://semver.org/] specification.  For example, the following fact is true: `semver_lt("1.0.3","1.1.0")`, where `lt` means `<`.
+
+The key difficulty of adding built-in predicates to Datalog is that built-in predicates such as `semver_lt` are infinite relations, which require special handling to retain Datalog's decidability. We support built-in predicates by deferring the evaluation of a built-in predicate until the arguments of this predicate are bound to constants.
+
+Since not all arguments of a predicate have to be bound to a constant during evaluation, e.g. if an argument depends on the other arguments, builtin predicates in Modus have Prolog-like signatures that specify which parameters have to be initialised (see [Predicates](./library/predicates/index.html)). <!-- FIXME: https://github.com/rust-lang/mdBook/issues/984 -->
+
 ### Non-Grounded Variables
 
-Datalog's safety conditions require that each variable that occurs in the rule's head must occur in its body. This restriction in inconvenient for container builds as the following example demonstrates:
+Build systems often use parameters that are passed by the user when they launch a build. Dockerfiles allow users to specify arbitrary parameters when launching a target's build using the `--build-arg` option. For example, a user may want to parameretise `app`'s image build with the parameter `cflags` to control complation flags:
 
 ```Modusfile
 app(cflags) :-
@@ -79,7 +87,7 @@ app(cflags) :-
   run(f"gcc ${cflags} test.c -o test").
 ```
 
-The variable `cflags` is not grounded, as it only appears as an argument of a built-in predicate, so this is an invalid Datalog program. Dockerfiles allow users to specify arbitrary parameters when launching a target's build, such as the `-g` flag. Such flags can be supported by, for example, adding possible compilation flags using a dedicated predicate:
+In this rule, the variable `cflags` is not _grounded_, as it only appears as an argument of a built-in predicate `run` that expects an instantiated variable. Thus, this is an invalid Datalog program, since it violates standard Datalog's safety conditions that do not permit non-grounded variables. A workaround of this problem is to define possible compilation flags using a dedicated predicate:
 
 ```Modusfile
 supported_flags("-g").
@@ -106,17 +114,10 @@ a(X) :-
 
 A query like `a("foo")`, where `"foo"` is a arbitrary string constant, would build the same image, but the query `a(X)` is not allowed. This ensures that each resulting image is mapped to a constant literal like `a("foo")`.
 
-### Builtin Predicates
-
-To facilitate definition of image builds, we introduced a library of built-in predicates. For example, the `semver_*` predicates define software version comparison as per the (SemVer)[https://semver.org/] specification.  For example, the following fact is true: `semver_lt("1.0.3","1.1.0")`, where `lt` means `<`.
-
-The key difficulty of adding built-in predicates to Datalog is that built-in predicates such as `semver_lt` are infinite relations, which require special handling to retain Datalog's decidability. As for non-grounded variables, we support built-in predicates by deferring the evaluation of a built-in predicate until the arguments of this predicate are bound to constants.
-
-Since not all arguments of a predicate have to be bound to a constant during evaluation, e.g. if an argument depends on the other arguments, builtin predicates in Modus have Prolog-like signatures that specify which parameters have to be initialised (see [Predicates](./library/predicates/index.html)). <!-- FIXME: https://github.com/rust-lang/mdBook/issues/984 -->
 
 ### Proof Optimality
 
-Modus searches for an optimal proof, that is a proof with a minimal cost. The cost of a proof is the number of layers in the build DAG.
+A Datalog fact can be inferred from other facts in multiple ways and therefore multiple proof trees may exists. Thus, an image defined in Modus may also be built using different build DAGs. Modus searches for an optimal proof, that is a proof with a minimal cost. The cost of a proof is the number of layers in the build DAG.
 
 To illustrate proof optimality, consider again this build script:
 
