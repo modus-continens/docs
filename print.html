@@ -668,14 +668,18 @@ IEEE TKDE 1989</p>
 <li>decidable, so it can always generate a minimal proof.</li>
 </ul>
 <p>Thus, Datalog presents a sweet spot between expressiveness and computatibility, which is important for a build system. Standard Datalog, despite its suitability for addressing their core dependency resolution problem, does not capture a container build environmental dependencies. To solve this problem, Modus extends Datalog with build-specific predicates and build parameters via ungrounded variables. Modus supports two Datalog extensions, namely builtin predicates described in <a href="./library/predicates/">Predicates</a> and non-grounded variables. To realise these extensions, Modus uses a custom top-down Datalog solver for generating proofs.</p>
+<h3 id="builtin-predicates"><a class="header" href="#builtin-predicates">Builtin Predicates</a></h3>
+<p>Dependency resolution is only part of the story. Container builds must also interact with the environment. Predicates elegantly capture these interactions. We have equipped Modus with a library of built-in predicates to handle these interactions. For example, the <code>semver_*</code> predicates define software version comparison as per the (SemVer)[https://semver.org/] specification.  For example, the following fact is true: <code>semver_lt(&quot;1.0.3&quot;,&quot;1.1.0&quot;)</code>, where <code>lt</code> means <code>&lt;</code>.</p>
+<p>The key difficulty of adding built-in predicates to Datalog is that built-in predicates such as <code>semver_lt</code> are infinite relations, which require special handling to retain Datalog's decidability. We support built-in predicates by deferring the evaluation of a built-in predicate until the arguments of this predicate are bound to constants.</p>
+<p>Since not all arguments of a predicate have to be bound to a constant during evaluation, e.g. if an argument depends on the other arguments, builtin predicates in Modus have Prolog-like signatures that specify which parameters have to be initialised (see <a href="./library/predicates/index.html">Predicates</a>). <!-- FIXME: https://github.com/rust-lang/mdBook/issues/984 --></p>
 <h3 id="non-grounded-variables"><a class="header" href="#non-grounded-variables">Non-Grounded Variables</a></h3>
-<p>Datalog's safety conditions require that each variable that occurs in the rule's head must occur in its body. This restriction in inconvenient for container builds as the following example demonstrates:</p>
+<p>Build systems often use parameters that are passed by the user when they launch a build. Dockerfiles allow users to specify arbitrary parameters when launching a target's build using the <code>--build-arg</code> option. For example, a user may want to parameretise <code>app</code>'s image build with the parameter <code>cflags</code> to control complation flags:</p>
 <pre><code class="language-Modusfile">app(cflags) :-
   from(&quot;gcc:latest&quot;),
   copy(&quot;.&quot;, &quot;.&quot;),
   run(f&quot;gcc ${cflags} test.c -o test&quot;).
 </code></pre>
-<p>The variable <code>cflags</code> is not grounded, as it only appears as an argument of a built-in predicate, so this is an invalid Datalog program. Dockerfiles allow users to specify arbitrary parameters when launching a target's build, such as the <code>-g</code> flag. Such flags can be supported by, for example, adding possible compilation flags using a dedicated predicate:</p>
+<p>In this rule, the variable <code>cflags</code> is not <em>grounded</em>, as it only appears as an argument of a built-in predicate <code>run</code> that expects an instantiated variable. Thus, this is an invalid Datalog program, since it violates standard Datalog's safety conditions that do not permit non-grounded variables. A workaround of this problem is to define possible compilation flags using a dedicated predicate:</p>
 <pre><code class="language-Modusfile">supported_flags(&quot;-g&quot;).
 supported_flags(&quot;&quot;).
 
@@ -693,12 +697,8 @@ a(cflags) :-
   run(&quot;echo Hello&quot;).
 </code></pre>
 <p>A query like <code>a(&quot;foo&quot;)</code>, where <code>&quot;foo&quot;</code> is a arbitrary string constant, would build the same image, but the query <code>a(X)</code> is not allowed. This ensures that each resulting image is mapped to a constant literal like <code>a(&quot;foo&quot;)</code>.</p>
-<h3 id="builtin-predicates"><a class="header" href="#builtin-predicates">Builtin Predicates</a></h3>
-<p>To facilitate definition of image builds, we introduced a library of built-in predicates. For example, the <code>semver_*</code> predicates define software version comparison as per the (SemVer)[https://semver.org/] specification.  For example, the following fact is true: <code>semver_lt(&quot;1.0.3&quot;,&quot;1.1.0&quot;)</code>, where <code>lt</code> means <code>&lt;</code>.</p>
-<p>The key difficulty of adding built-in predicates to Datalog is that built-in predicates such as <code>semver_lt</code> are infinite relations, which require special handling to retain Datalog's decidability. As for non-grounded variables, we support built-in predicates by deferring the evaluation of a built-in predicate until the arguments of this predicate are bound to constants.</p>
-<p>Since not all arguments of a predicate have to be bound to a constant during evaluation, e.g. if an argument depends on the other arguments, builtin predicates in Modus have Prolog-like signatures that specify which parameters have to be initialised (see <a href="./library/predicates/index.html">Predicates</a>). <!-- FIXME: https://github.com/rust-lang/mdBook/issues/984 --></p>
 <h3 id="proof-optimality"><a class="header" href="#proof-optimality">Proof Optimality</a></h3>
-<p>Modus searches for an optimal proof, that is a proof with a minimal cost. The cost of a proof is the number of layers in the build DAG.</p>
+<p>A Datalog fact can be inferred from other facts in multiple ways and therefore multiple proof trees may exists. Thus, an image defined in Modus may also be built using different build DAGs. Modus searches for an optimal proof, that is a proof with a minimal cost. The cost of a proof is the number of layers in the build DAG.</p>
 <p>To illustrate proof optimality, consider again this build script:</p>
 <pre><code class="language-Modusfile">a(mode) :-
     (
