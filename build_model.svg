@@ -25,7 +25,7 @@
      showgrid="false"
      inkscape:zoom="2.95"
      inkscape:cx="143.22034"
-     inkscape:cy="42.372881"
+     inkscape:cy="42.033898"
      inkscape:window-width="1920"
      inkscape:window-height="1011"
      inkscape:window-x="0"
@@ -96,7 +96,15 @@
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="bg"
-     style="display:inline" />
+     style="display:inline">
+    <rect
+       style="fill:#ffffff;stroke-width:0.1;paint-order:markers fill stroke"
+       id="rect1343"
+       height="40"
+       x="0.2579827"
+       y="0.2579827"
+       width="82" />
+  </g>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
