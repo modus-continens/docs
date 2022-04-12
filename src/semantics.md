@@ -1,13 +1,13 @@
 # Semantics
 
-Given a build script and a query, Modus performs two operations:
+Given a Modusfile and a goal, Modus performs two operations:
 
-1. computes the build [Directed acyclic graph (DAG)](https://en.wikipedia.org/wiki/Directed_acyclic_graph) using an extended [Datalog](https://en.wikipedia.org/wiki/Datalog) solver;
+1. computes the build [DAG](https://en.wikipedia.org/wiki/Directed_acyclic_graph) using a [Datalog](https://en.wikipedia.org/wiki/Datalog) solver;
 2. executes the build in parallel using [BuildKit](https://github.com/moby/buildkit).
 
-The build DAG is a graph that describes dependencies between build operations. It is a DAG, and not a set of trees, because some intermediate images can be shared and built only once. The DAG is computed by a Datalog solver as the minimal proof of the build target from true facts representing either existing images, or intrinsics like `run` which add build steps. The build DAG is constructed statically, i.e. the values of the variables do not depend on the results of build execution. Particularities of DAG construction are described in [Static](./static.md).
+The build DAG is a graph that describes dependencies between build operations. The DAG is computed by a Datalog solver as a minimal proof of the build target from true facts representing either existing images, or intrinsics like `run` which add build steps. The build DAG is constructed statically, i.e. the values of the variables do not depend on the results of build execution.
 
-After the build DAG is computed, it is transformed into a [BuildKit](https://github.com/moby/buildkit) representation. Then, BuildKit executes build subtrees in parallel to construct the target images. Particularities of build execution are described in [Runtime](./runtime.md).
+After the build DAG is computed, it is transformed into a [BuildKit](https://github.com/moby/buildkit) representation. Then, BuildKit executes build subtrees in parallel to construct the target images.
 
 ## Predicate Kinds
 

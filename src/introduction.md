@@ -1,6 +1,6 @@
 # Introduction
 
-Modus is a language for building OCI/Docker container images. Modus uses logic programming to solve key pain points of Dockerfiles - no way to express interaction among parameters, inability to specify complex build workflows, difficult and inefficient parallelisation, bloated images, and costly maintenance. For more information, please follow the following links:
+Modus is a language for building Docker/OCI container images. Modus uses logic programming to express interactions among build parameters, specify complex build workflows, automatically parallelise and cache builds, help to reduce image size, and simplify maintenance. For more information, please follow the following links:
 
 - [Modus website](https://modus-continens.com)
 - [Documentation](https://docs.modus-continens.com)

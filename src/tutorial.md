@@ -2,7 +2,7 @@
 
 ## Installation
 
-Follow the [installation instructions](https://modus-continens.com/get.html) on the website to download and install Modus.
+Please follow the [installation instructions](https://modus-continens.com/get.html) on the website to download and install Modus.
 
 ## Your First Modusfile
 
@@ -45,24 +45,24 @@ The `set_workdir` operator takes in a path, and sets the working directory of it
 To build a Modusfile, you just need to use the "`modus build`" command. The usage is fairly similar to `docker build`:
 
 ```
-modus build [-f <Modusfile>] <CONTEXT> <QUERY>
+modus build [-f <Modusfile>] <CONTEXT> <GOAL>
 ```
 
-`CONTEXT` is a directory containing any source file that you want to make available to Docker, just like the context directory in `docker build`. `QUERY` is a literal denoting what you want to build. You can use "`-f <Modusfile>`" to specify the Modusfile to build, and the default is `Modusfile` in the context directory.
+`CONTEXT` is a directory containing any source file that you want to make available to Docker, just like the context directory in `docker build`. `GOAL` is a literal denoting what you want to build. You can use "`-f <Modusfile>`" to specify the Modusfile to build, and the default is `Modusfile` in the context directory.
 
-In our case, we can use `my_app("debug")` as our query in order to build a debug image. However, we can also specify unbounded variables in our query. If we simply use `my_app(X)` as our query, Modus will build two images in parallel for us, one being the debug image and the other being the release image. You can think of it as saying "For all X, as long as `my_app(X)` generates a valid image, build it". You can also go a step further and add parameters to select the rust channel, base distributions, etc. You can't specify a default for these parameters, but you can define versions of `my_app` that takes different numbers (including zero) of parameters, to simulate having a default. For example, by adding:
+In our case, we can use `my_app("debug")` as our goal in order to build a debug image. However, we can also specify unbounded variables in our goal. If we simply use `my_app(X)` as our goal, Modus will build two images in parallel for us, one being the debug image and the other being the release image. You can think of it as saying "For all X, as long as `my_app(X)` generates a valid image, build it". You can also go a step further and add parameters to select the rust channel, base distributions, etc. You can't specify a default for these parameters, but you can define versions of `my_app` that takes different numbers (including zero) of parameters, to simulate having a default. For example, by adding:
 
 ```Modusfile
 my_app :- my_app("release").
 ```
 
-The query `my_app` will now build the release version, while you can still use `my_app("debug")` to build the debug version.
+The goal `my_app` will now build the release version, while you can still use `my_app("debug")` to build the debug version.
 
 The attentive reader will have noticed that our Modusfile builds both a debug and a release image. Consider how you would do this with Dockerfiles &mdash; you would either need two separate Dockerfiles, each building one version, or do something with build arguments. It may not be a problem if you only have debug and release images, but it quickly become hard to manage, especially if you need to take separate steps depending on some arguments.
 
 ## Intermediate Build Stages
 
-For our next step, we want to reduce the size of the final image by building the rust code in a separate stage, then starting a new image and copying the binary inside. This can be easily implemented in Modusfile as well. We will just need to add the following lines to our existing Modusfile, and use `trimmed_app` as our query instead:
+For our next step, we want to reduce the size of the final image by building the rust code in a separate stage, then starting a new image and copying the binary inside. This can be easily implemented in Modusfile as well. We will just need to add the following lines to our existing Modusfile, and use `trimmed_app` as our goal instead:
 
 ```Modusfile
 trimmed_app(profile) :-
@@ -127,7 +127,7 @@ my_app(channel) :-
   run(f"rustup run ${channel} cargo build").
 ```
 
-Without `rust_channel(channel)`, the query `my_app(X)` would fail, because it is not possible to build an infinite set of images. With the predicate to limit the values of `X`, a query like `my_app(X)` will build 3 images, each with a different version of rust.
+Without `rust_channel(channel)`, the goal `my_app(X)` would fail, because it is not possible to build an infinite set of images. With the predicate to limit the values of `X`, a query like `my_app(X)` will build 3 images, each with a different version of rust.
 
 ## Where to go from here&hellip;
 

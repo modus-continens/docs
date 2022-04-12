@@ -7,11 +7,11 @@ The following screencast demonstrates a simple but complete workflow of proving,
 
 Much like `docker build`, the `modus build` command builds a Modusfile.
 
-**Syntax**: `modus build [options] <context> <query>`
+**Syntax**: `modus build [options] <context> <goal>`
 
 `context` is a directory containing all files (including the Modusfile) to send to Docker for building. `.dockerignore` can be used to exclude files in the same way as `docker build`.
 
-`query` is the target literal to build.
+`goal` is the target literal to build.
 
 **Options**:
 
@@ -63,16 +63,16 @@ Defaults: `--image-export-concurrency=8`, `--image-resolve-concurrency=3`.
 
 `modus proof` prints out proof trees based on some Modus facts/rules, and a provided goal.
 
-**Syntax**: `modus proof [options] <context> <query>`
+**Syntax**: `modus proof [options] <context> <goal>`
 
 - `context` is a directory that should contain the Modusfile that contains the facts/rules.
 This is chosen to match the interface of `modus build`.
-- `query` specifies the goal to prove.
+- `goal` specifies the goal to prove.
 
 **Options**:
 
 - `--compact`: Changes the output of proof trees, omitting logical rule resolution.
-- `-e, --explain`: Prints out a structured 'explanation' of the steps taken to prove `<query>` during
+- `-e, --explain`: Prints out a structured 'explanation' of the steps taken to prove `<goal>` during
 SLD resolution. (See `-g` for a graphical version of this.)
 This may be verbose.
 - `-f <modusfile>`: Use the facts and rules of this Modusfile, instead of `<context>/Modusfile`.

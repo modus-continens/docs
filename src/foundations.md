@@ -35,7 +35,7 @@ a(mode) :-
     )::set_workdir("/app").
 ```
 
-For the query `a(X)`, where `X` is a variable, Modus computes the following build trees:
+For the goal `a(X)`, where `X` is a variable, Modus computes the following build trees:
 
 ```
 a("production")
@@ -70,7 +70,7 @@ Thus, Datalog presents a sweet spot between expressiveness and computatibility, 
 
 ### Builtin Predicates
 
-Dependency resolution is only part of the story. Container builds must also interact with the environment. Predicates elegantly capture these interactions. We have equipped Modus with a library of built-in predicates to handle these interactions. For example, the `semver_*` predicates define software version comparison as per the (SemVer)[https://semver.org/] specification.  For example, the following fact is true: `semver_lt("1.0.3","1.1.0")`, where `lt` means `<`.
+Dependency resolution is only part of the story. Container builds must also interact with the environment. Predicates elegantly capture these interactions. We have equipped Modus with a library of built-in predicates to handle these interactions. For example, the `semver_*` predicates define software version comparison as per the [SemVer](https://semver.org/) specification.  For example, the following fact is true: `semver_lt("1.0.3","1.1.0")`, where `lt` means `<`.
 
 The key difficulty of adding built-in predicates to Datalog is that built-in predicates such as `semver_lt` are infinite relations, which require special handling to retain Datalog's decidability. We support built-in predicates by deferring the evaluation of a built-in predicate until the arguments of this predicate are bound to constants.
 
@@ -112,7 +112,7 @@ a(X) :-
   run("echo Hello").
 ```
 
-A query like `a("foo")`, where `"foo"` is a arbitrary string constant, would build the same image, but the query `a(X)` is not allowed. This ensures that each resulting image is mapped to a constant literal like `a("foo")`.
+A goal like `a("foo")`, where `"foo"` is a arbitrary string constant, would build the same image, but the query `a(X)` is not allowed. This ensures that each resulting image is mapped to a constant literal like `a("foo")`.
 
 
 ### Proof Optimality
@@ -135,7 +135,7 @@ a(mode) :-
     )::set_workdir("/app").
 ```
 
-For the query `a("production")`, Modus will compute the following build trees:
+For the goal `a("production")`, Modus will compute the following build trees:
 
 ```
 a("production")
@@ -152,7 +152,7 @@ However, if we add a new rule that uses a cached development image from a regist
 a("development") :- from("myregistry.domain.com/app:1.1-dev").
 ```
 
-then the result of the query `a("production")` will become
+then the result of the goal `a("production")` will become
 
 ```
 a("production")
