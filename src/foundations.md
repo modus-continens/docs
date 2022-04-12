@@ -1,6 +1,6 @@
 # Foundations
 
-This section discusses theoretical foundations of Modus. Note the understanding these foundations is not required to use Modus.
+Container images are build on top of other images or by copying information from other images. Therefore, the image construction problem can be viewed as the problem of resolving dependencies between container images. Modus concisely captures and resolves these dependencies using logic programming. This section discusses the logic programming foundations of Modus. You do not need to understand these foundations to use, and profit from, Modus.
 
 ## Design Principles
 
@@ -9,13 +9,13 @@ This section discusses theoretical foundations of Modus. Note the understanding 
 - _Expressiveness_: enable the user to express complex build workflows.
 - _Simplicity_: provide minimalistic syntax and well-defined, non-Turing-complete semantics for build definitions.
 
-## Build Model
+## Container Image Build Model
 
 A [Docker/OSI container image](https://opencontainers.org/) consists of a set of layers combined using a [union mount filesystem](https://en.wikipedia.org/wiki/Union_mount). To build an image, the user specifies the parent image and defines operations that are executed on top of the parent image to form new layers. The most common operations are copying local files into the container and executing shell commands. Another important operation which enables [multi-stage builds](https://docs.docker.com/develop/develop-images/multistage-build/) is copying files from another image. A multi-stage build can be visualised as the following graph. Each instruction in this graph creates a new filesystem layer. Instructions are specified using Dockerfile's notation: `FROM` defines the parent image, `COPY` copies local files, `RUN` executes shell command, and `COPY --from` copies files from another container.
 
 ![Container Image Build Model](build_model.svg)
 
-The key insight of Modus is that this build modus naturally maps to [Horn clauses](https://en.wikipedia.org/wiki/Horn_clause), logical formulas in the form \\( u \leftarrow (p \wedge q\ \wedge ... \wedge\ t) \\). Particularly, container images correspond to logical facts, build rules are logical rules that derive new facts from existing facts, and the build graph is the minimal proof of the fact representing the build target from the facts representing existing images.
+The key insight of Modus is that this build model maps to [Horn clauses](https://en.wikipedia.org/wiki/Horn_clause), logical formulas in the form \\( u \leftarrow (p \wedge q\ \wedge ... \wedge\ t) \\). Particularly, container images correspond to logical facts, build rules are logical rules that derive new facts from existing facts, and the build graph is a minimal proof of the fact representing the build target from the facts representing existing images.
 
 Consider the following recursive build script:
 
@@ -52,32 +52,32 @@ The subtree `a("development")` of the two trees is shared; it is only built once
 
 ## Datalog
 
-Datalog is a specific kind of Horn clauses with specific semantics. A good overview of Datalog is given in the following article:
+Datalog is a specific kind of Horn clauses. A good overview of Datalog is given in the following article:
 
-_What You Always Wanted to Know About Datalog (And Never Dared to Ask)_<br>
+_[What You Always Wanted to Know About Datalog (And Never Dared to Ask)](https://ieeexplore.ieee.org/document/43410)_<br>
 Stefano Ceri, Georg Gottlob, Letizia Tanca<br>
 IEEE TKDE 1989
 
-Modus uses Datalog for several reasons:
+Modus uses Datalog because it is:
 
-- Datalog is declarative, the success of solving does not depend on the ordering of clauses (although the order of clauses is still important, as they determine the order of build steps);
-- Datalog is expressive;
-- in Datalog, the generation of minimal proofs is decidable.
+- declarative, the success of solving does not depend on the ordering of clauses;
+- expressive;
+- decidable, so it can always generate a minimal proof.
 
-Thus, Datalog presents a sweet spot between expressiveness and computatibility, which is important for a build system. Note that there is no fundamental connection between Datalog's expressive power and container builds. In fact, the expressiveness of the standard Datalog is not sufficient to conveniently express some natural build scenarios. For this reason, Modus supports two extensions, namely builtin predicates described in [Predicates](./library/predicates/README.md) and non-grounded variables. To realise these extensions, Modus uses a custom top-down Datalog solver for generating proofs.
+Thus, Datalog presents a sweet spot between expressiveness and computatibility, which is important for a build system. Standard Datalog, despite its suitability for addressing their core dependency resolution problem, does not capture a container build environmental dependencies. To solve this problem, Modus extends Datalog with build-specific predicates and build parameters via ungrounded variables. Modus supports two Datalog extensions, namely builtin predicates described in [Predicates](./library/predicates/) and non-grounded variables. To realise these extensions, Modus uses a custom top-down Datalog solver for generating proofs.
 
 ### Non-Grounded Variables
 
-Modus extends Datalog with non-grounded variables. To illustrate this extension, consider the following build script:
+Datalog's safety conditions require that each variable that occurs in the rule's head must occur in its body. This restriction in inconvenient for container builds as the following example demonstrates:
 
 ```Modusfile
-a(cflags) :-
-    from("gcc:latest"),
-    copy(".", "."),
-    run(f"gcc ${cflags} test.c -o test").
+app(cflags) :-
+  from("gcc:latest"),
+  copy(".", "."),
+  run(f"gcc ${cflags} test.c -o test").
 ```
 
-If the user specifies the query `a("-g")`, then Modus will build an image with a binary compiled with debug symbols. However, for the query `a(X)`, Modus will return an error, because the compilation flags `cflags` cannot be inferred from build definitions. This problem can be solved by, for example, adding possible compilation flags using a dedicated predicate:
+The variable `cflags` is not grounded, as it only appears as an argument of a built-in predicate, so this is an invalid Datalog program. Dockerfiles allow users to specify arbitrary parameters when launching a target's build, such as the `-g` flag. Such flags can be supported by, for example, adding possible compilation flags using a dedicated predicate:
 
 ```Modusfile
 supported_flags("-g").
@@ -90,22 +90,31 @@ a(cflags) :-
     run(f"gcc ${cflags} test.c -o test").
 ```
 
-For the later script, the query `a(X)` will results in two images: `a("-g")` and `a("")`.
+However, GCC accepts a large number of flags, so it would impractical to list all accepted flags in the Modus program. Instead, it would be natural to allow users to use this program to build the goal `app("-g")`, since the argument of `run` can then be inferred from the goal.
 
-In the standard Datalog, only the second variant is possible, because all variables have to be grounded (variables apearing in the head of a rule should also appear in the body, not in builtin predicates). However, specifying all possible values of all parameters is inconvenient. For this reason, Modus supports non-grounded variables. Specifically, it will make the best effort to initialise each variable in the rule before returning an error.
+To enable such usage scenarios, we relaxed the safety conditions by allowing user-defined predicates with non-grounded variables. At the same time, we introduced the new restriction that, during evaluation, we defer the evaluation of these predicates until all of their arguments are bound to constants. Doing so enabled us to support the usage scenario above without sacrificing Datalog's safety.
 
-Builtin predicates in Modus has Prolog-like signatures that specify which parameters have to be initialised (see [Predicates](./library/predicates/README.md)). <!-- FIXME: https://github.com/rust-lang/mdBook/issues/984 -->
-For user-defined predicates, variables which does not appear in the body always has to be initialised before the rule can be applied. For example, for the script:
+For user-defined predicates, variables which do not appear in the body have to be initialised before the rule can be applied. For example, for the script:
 
 ```Modusfile
-a(X) :- from("alpine"), run("echo Hello")
+a(X) :-
+  from("alpine"),
+  run("echo Hello").
 ```
 
-A query like `a("foo")` where `foo` is any string constant would build the same image, but a query like `a(X)` is simply not allowed. This allows each resulting image to be mapped to a constant literal like `a("foo")`.
+A query like `a("foo")`, where `"foo"` is a arbitrary string constant, would build the same image, but the query `a(X)` is not allowed. This ensures that each resulting image is mapped to a constant literal like `a("foo")`.
+
+### Builtin Predicates
+
+To facilitate definition of image builds, we introduced a library of built-in predicates. For example, the `semver_*` predicates define software version comparison as per the (SemVer)[https://semver.org/] specification.  For example, the following fact is true: `semver_lt("1.0.3","1.1.0")`, where `lt` means `<`.
+
+The key difficulty of adding built-in predicates to Datalog is that built-in predicates such as `semver_lt` are infinite relations, which require special handling to retain Datalog's decidability. As for non-grounded variables, we support built-in predicates by deferring the evaluation of a built-in predicate until the arguments of this predicate are bound to constants.
+
+Since not all arguments of a predicate have to be bound to a constant during evaluation, e.g. if an argument depends on the other arguments, builtin predicates in Modus have Prolog-like signatures that specify which parameters have to be initialised (see [Predicates](./library/predicates/index.html)). <!-- FIXME: https://github.com/rust-lang/mdBook/issues/984 -->
 
 ### Proof Optimality
 
-Modus searches for the optimal proof, that is the proof with minimal cost. The cost of a proof is the number of layers in the build DAG.
+Modus searches for an optimal proof, that is a proof with a minimal cost. The cost of a proof is the number of layers in the build DAG.
 
 To illustrate proof optimality, consider again this build script:
 
@@ -164,3 +173,5 @@ a(choice) :-
     choice = "left", b;
     choice = "right", c.
 ```
+
+Modus produces a warning when the build graph construction is non-deterministic.
