@@ -1,6 +1,6 @@
 # Foundations
 
-Container images are build on top of other images or by copying information from other images. Therefore, the image construction problem can be viewed as the problem of resolving dependencies between container images. Modus concisely captures and resolves these dependencies using logic programming. This section discusses the logic programming foundations of Modus. You do not need to understand these foundations to use, and profit from, Modus.
+Container images are built on top of base images by copying information from other images and intacting with the environment. Modus uses decidable logic programming to concisely capture and efficiently resolve dependencies between images and to encapluate environmental interactions with predicates and operators. This section discusses the logic programming foundations of Modus. You do not need to understand these foundations to use, and profit from, Modus.
 
 ## Design Principles
 
@@ -11,11 +11,13 @@ Container images are build on top of other images or by copying information from
 
 ## Container Image Build Model
 
-A [Docker/OSI container image](https://opencontainers.org/) consists of a set of layers combined using a [union mount filesystem](https://en.wikipedia.org/wiki/Union_mount). To build an image, the user specifies the parent image and defines operations that are executed on top of the parent image to form new layers. The most common operations are copying local files into the container and executing shell commands. Another important operation which enables [multi-stage builds](https://docs.docker.com/develop/develop-images/multistage-build/) is copying files from another image. A multi-stage build can be visualised as the following graph. Each instruction in this graph creates a new filesystem layer. Instructions are specified using Dockerfile's notation: `FROM` defines the parent image, `COPY` copies local files, `RUN` executes shell command, and `COPY --from` copies files from another container.
+A [Docker/OSI container image](https://opencontainers.org/) consists of a set of layers combined using a [union mount filesystem](https://en.wikipedia.org/wiki/Union_mount). To build an image, the user specifies the parent image and defines operations that are executed on top of the parent image to form new layers. The most common operations are copying local files into the container and executing shell commands.
+
+Another important operation which enables [multi-stage builds](https://docs.docker.com/develop/develop-images/multistage-build/) is copying files from another image. A multi-stage build can be visualised as the following graph. Each instruction in this graph creates a new filesystem layer. Instructions are specified using Dockerfile's notation: `FROM` defines the parent image, `COPY` copies local files, `RUN` executes shell command, and `COPY --from` copies files from another container.
 
 ![Container Image Build Model](build_model.svg)
 
-The key insight of Modus is that this build model maps to [Horn clauses](https://en.wikipedia.org/wiki/Horn_clause), logical formulas in the form \\( u \leftarrow (p \wedge q\ \wedge ... \wedge\ t) \\). Particularly, container images correspond to logical facts, build rules are logical rules that derive new facts from existing facts, and the build graph is a minimal proof of the fact representing the build target from the facts representing existing images.
+The key insight of Modus is that the resolution of dependencies between images in this build model maps to [Horn clauses](https://en.wikipedia.org/wiki/Horn_clause), logical formulas in the form \\( u \leftarrow (p \wedge q\ \wedge ... \wedge\ t) \\). Particularly, container images correspond to logical facts, build rules are logical rules that derive new facts from existing facts, and the build graph is a minimal proof of the fact representing the build target from the facts representing existing images.
 
 Consider the following recursive build script:
 
@@ -52,7 +54,7 @@ The subtree `a("development")` of the two trees is shared; it is only built once
 
 ## Datalog
 
-Datalog is a specific kind of Horn clauses. A good overview of Datalog is given in the following article:
+Datalog is a decidable fragment of Horn clauses. A good overview of Datalog is given in the following article:
 
 _[What You Always Wanted to Know About Datalog (And Never Dared to Ask)](https://ieeexplore.ieee.org/document/43410)_<br>
 Stefano Ceri, Georg Gottlob, Letizia Tanca<br>
