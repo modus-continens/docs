@@ -152,9 +152,9 @@
 <a href="https://asciinema.org/a/DelA6wHXgWGaFUhPUnZAdFZDw"><img src="https://asciinema.org/a/DelA6wHXgWGaFUhPUnZAdFZDw.svg" alt="asciicast" /></a></p>
 <h2 id="modus-build"><a class="header" href="#modus-build"><code>modus build</code></a></h2>
 <p>Much like <code>docker build</code>, the <code>modus build</code> command builds a Modusfile.</p>
-<p><strong>Syntax</strong>: <code>modus build [options] &lt;context&gt; &lt;query&gt;</code></p>
+<p><strong>Syntax</strong>: <code>modus build [options] &lt;context&gt; &lt;goal&gt;</code></p>
 <p><code>context</code> is a directory containing all files (including the Modusfile) to send to Docker for building. <code>.dockerignore</code> can be used to exclude files in the same way as <code>docker build</code>.</p>
-<p><code>query</code> is the target literal to build.</p>
+<p><code>goal</code> is the target literal to build.</p>
 <p><strong>Options</strong>:</p>
 <p><code>-f &lt;modusfile&gt;</code>: Allows building something other than <code>./Modusfile</code>.</p>
 <p><code>--json</code> or <code>--json=&lt;file&gt;</code>: Outputs the build results as JSON.</p>
@@ -184,16 +184,16 @@
 <p>Defaults: <code>--image-export-concurrency=8</code>, <code>--image-resolve-concurrency=3</code>.</p>
 <h2 id="modus-proof"><a class="header" href="#modus-proof"><code>modus proof</code></a></h2>
 <p><code>modus proof</code> prints out proof trees based on some Modus facts/rules, and a provided goal.</p>
-<p><strong>Syntax</strong>: <code>modus proof [options] &lt;context&gt; &lt;query&gt;</code></p>
+<p><strong>Syntax</strong>: <code>modus proof [options] &lt;context&gt; &lt;goal&gt;</code></p>
 <ul>
 <li><code>context</code> is a directory that should contain the Modusfile that contains the facts/rules.
 This is chosen to match the interface of <code>modus build</code>.</li>
-<li><code>query</code> specifies the goal to prove.</li>
+<li><code>goal</code> specifies the goal to prove.</li>
 </ul>
 <p><strong>Options</strong>:</p>
 <ul>
 <li><code>--compact</code>: Changes the output of proof trees, omitting logical rule resolution.</li>
-<li><code>-e, --explain</code>: Prints out a structured 'explanation' of the steps taken to prove <code>&lt;query&gt;</code> during
+<li><code>-e, --explain</code>: Prints out a structured 'explanation' of the steps taken to prove <code>&lt;goal&gt;</code> during
 SLD resolution. (See <code>-g</code> for a graphical version of this.)
 This may be verbose.</li>
 <li><code>-f &lt;modusfile&gt;</code>: Use the facts and rules of this Modusfile, instead of <code>&lt;context&gt;/Modusfile</code>.</li>

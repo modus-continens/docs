@@ -149,7 +149,7 @@
                     <main>
                         <h1 id="tutorial"><a class="header" href="#tutorial">Tutorial</a></h1>
 <h2 id="installation"><a class="header" href="#installation">Installation</a></h2>
-<p>Follow the <a href="https://modus-continens.com/get.html">installation instructions</a> on the website to download and install Modus.</p>
+<p>Please follow the <a href="https://modus-continens.com/get.html">installation instructions</a> on the website to download and install Modus.</p>
 <h2 id="your-first-modusfile"><a class="header" href="#your-first-modusfile">Your First Modusfile</a></h2>
 <p>Modusfiles are our version of Dockerfiles. They are a collection of rules that specify how to build images. We now demonstrate how to use Modus to build a simple rust application.</p>
 <pre><code class="language-Modusfile">my_app(profile) :-
@@ -186,16 +186,16 @@ cargo_build(&quot;release&quot;) :- run(&quot;cargo build --release&quot;). # RU
 <p>What this means is that <code>run(&quot;cargo build&quot;)</code> logically implies <code>cargo_build(&quot;debug&quot;)</code>. Given this definition, whenever Modus sees <code>cargo_build(&quot;debug&quot;)</code>, Modus replaces it with <code>run(&quot;cargo build&quot;)</code>.</p>
 <p>The <code>set_workdir</code> operator takes in a path, and sets the working directory of its image operand. This changes subsequent resolution of relative paths, such as in the destination argument of <code>copy</code>. <code>set_entrypoint</code> simply overrides the entrypoint of an image.</p>
 <p>To build a Modusfile, you just need to use the &quot;<code>modus build</code>&quot; command. The usage is fairly similar to <code>docker build</code>:</p>
-<pre><code>modus build [-f &lt;Modusfile&gt;] &lt;CONTEXT&gt; &lt;QUERY&gt;
+<pre><code>modus build [-f &lt;Modusfile&gt;] &lt;CONTEXT&gt; &lt;GOAL&gt;
 </code></pre>
-<p><code>CONTEXT</code> is a directory containing any source file that you want to make available to Docker, just like the context directory in <code>docker build</code>. <code>QUERY</code> is a literal denoting what you want to build. You can use &quot;<code>-f &lt;Modusfile&gt;</code>&quot; to specify the Modusfile to build, and the default is <code>Modusfile</code> in the context directory.</p>
-<p>In our case, we can use <code>my_app(&quot;debug&quot;)</code> as our query in order to build a debug image. However, we can also specify unbounded variables in our query. If we simply use <code>my_app(X)</code> as our query, Modus will build two images in parallel for us, one being the debug image and the other being the release image. You can think of it as saying &quot;For all X, as long as <code>my_app(X)</code> generates a valid image, build it&quot;. You can also go a step further and add parameters to select the rust channel, base distributions, etc. You can't specify a default for these parameters, but you can define versions of <code>my_app</code> that takes different numbers (including zero) of parameters, to simulate having a default. For example, by adding:</p>
+<p><code>CONTEXT</code> is a directory containing any source file that you want to make available to Docker, just like the context directory in <code>docker build</code>. <code>GOAL</code> is a literal denoting what you want to build. You can use &quot;<code>-f &lt;Modusfile&gt;</code>&quot; to specify the Modusfile to build, and the default is <code>Modusfile</code> in the context directory.</p>
+<p>In our case, we can use <code>my_app(&quot;debug&quot;)</code> as our goal in order to build a debug image. However, we can also specify unbounded variables in our goal. If we simply use <code>my_app(X)</code> as our goal, Modus will build two images in parallel for us, one being the debug image and the other being the release image. You can think of it as saying &quot;For all X, as long as <code>my_app(X)</code> generates a valid image, build it&quot;. You can also go a step further and add parameters to select the rust channel, base distributions, etc. You can't specify a default for these parameters, but you can define versions of <code>my_app</code> that takes different numbers (including zero) of parameters, to simulate having a default. For example, by adding:</p>
 <pre><code class="language-Modusfile">my_app :- my_app(&quot;release&quot;).
 </code></pre>
-<p>The query <code>my_app</code> will now build the release version, while you can still use <code>my_app(&quot;debug&quot;)</code> to build the debug version.</p>
+<p>The goal <code>my_app</code> will now build the release version, while you can still use <code>my_app(&quot;debug&quot;)</code> to build the debug version.</p>
 <p>The attentive reader will have noticed that our Modusfile builds both a debug and a release image. Consider how you would do this with Dockerfiles — you would either need two separate Dockerfiles, each building one version, or do something with build arguments. It may not be a problem if you only have debug and release images, but it quickly become hard to manage, especially if you need to take separate steps depending on some arguments.</p>
 <h2 id="intermediate-build-stages"><a class="header" href="#intermediate-build-stages">Intermediate Build Stages</a></h2>
-<p>For our next step, we want to reduce the size of the final image by building the rust code in a separate stage, then starting a new image and copying the binary inside. This can be easily implemented in Modusfile as well. We will just need to add the following lines to our existing Modusfile, and use <code>trimmed_app</code> as our query instead:</p>
+<p>For our next step, we want to reduce the size of the final image by building the rust code in a separate stage, then starting a new image and copying the binary inside. This can be easily implemented in Modusfile as well. We will just need to add the following lines to our existing Modusfile, and use <code>trimmed_app</code> as our goal instead:</p>
 <pre><code class="language-Modusfile">trimmed_app(profile) :-
   (
     from(&quot;alpine&quot;),
@@ -248,7 +248,7 @@ my_app(channel) :-
   rust_channel(channel),
   run(f&quot;rustup run ${channel} cargo build&quot;).
 </code></pre>
-<p>Without <code>rust_channel(channel)</code>, the query <code>my_app(X)</code> would fail, because it is not possible to build an infinite set of images. With the predicate to limit the values of <code>X</code>, a query like <code>my_app(X)</code> will build 3 images, each with a different version of rust.</p>
+<p>Without <code>rust_channel(channel)</code>, the goal <code>my_app(X)</code> would fail, because it is not possible to build an infinite set of images. With the predicate to limit the values of <code>X</code>, a query like <code>my_app(X)</code> will build 3 images, each with a different version of rust.</p>
 <h2 id="where-to-go-from-here"><a class="header" href="#where-to-go-from-here">Where to go from here…</a></h2>
 <p>Now that you have learned the basics of Modus, you can go ahead and read the rest of the documentation, which dive deeper into how everything works exactly (groundness, predicate kinds, etc), as well as other built-in predicates and operators like <code>number_{gt,lt,eq,geq,leq}</code>, string parsing and manipulation, operators to set environment variables, temproarily changing the working directory with <code>in_workdir</code>, squashing image layers with <code>::merge</code>, etc.</p>
 

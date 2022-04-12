@@ -149,7 +149,7 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
-<p>Modus is a language for building OCI/Docker container images. Modus uses logic programming to solve key pain points of Dockerfiles - no way to express interaction among parameters, inability to specify complex build workflows, difficult and inefficient parallelisation, bloated images, and costly maintenance. For more information, please follow the following links:</p>
+<p>Modus is a language for building Docker/OCI container images. Modus uses logic programming to express interactions among build parameters, specify complex build workflows, automatically parallelise and cache builds, help to reduce image size, and simplify maintenance. For more information, please follow the following links:</p>
 <ul>
 <li><a href="https://modus-continens.com">Modus website</a></li>
 <li><a href="https://docs.modus-continens.com">Documentation</a></li>
@@ -160,7 +160,7 @@
 <p>Modus uses semantic versioning; until version 1.0 is declared, breaking changes are possible. The current version, 0.1, is a preview release. We welcome bug reports and feature requests submitted through <a href="https://github.com/mechtaev/modus/issues">GitHub Issues</a>.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="tutorial"><a class="header" href="#tutorial">Tutorial</a></h1>
 <h2 id="installation"><a class="header" href="#installation">Installation</a></h2>
-<p>Follow the <a href="https://modus-continens.com/get.html">installation instructions</a> on the website to download and install Modus.</p>
+<p>Please follow the <a href="https://modus-continens.com/get.html">installation instructions</a> on the website to download and install Modus.</p>
 <h2 id="your-first-modusfile"><a class="header" href="#your-first-modusfile">Your First Modusfile</a></h2>
 <p>Modusfiles are our version of Dockerfiles. They are a collection of rules that specify how to build images. We now demonstrate how to use Modus to build a simple rust application.</p>
 <pre><code class="language-Modusfile">my_app(profile) :-
@@ -197,16 +197,16 @@ cargo_build(&quot;release&quot;) :- run(&quot;cargo build --release&quot;). # RU
 <p>What this means is that <code>run(&quot;cargo build&quot;)</code> logically implies <code>cargo_build(&quot;debug&quot;)</code>. Given this definition, whenever Modus sees <code>cargo_build(&quot;debug&quot;)</code>, Modus replaces it with <code>run(&quot;cargo build&quot;)</code>.</p>
 <p>The <code>set_workdir</code> operator takes in a path, and sets the working directory of its image operand. This changes subsequent resolution of relative paths, such as in the destination argument of <code>copy</code>. <code>set_entrypoint</code> simply overrides the entrypoint of an image.</p>
 <p>To build a Modusfile, you just need to use the &quot;<code>modus build</code>&quot; command. The usage is fairly similar to <code>docker build</code>:</p>
-<pre><code>modus build [-f &lt;Modusfile&gt;] &lt;CONTEXT&gt; &lt;QUERY&gt;
+<pre><code>modus build [-f &lt;Modusfile&gt;] &lt;CONTEXT&gt; &lt;GOAL&gt;
 </code></pre>
-<p><code>CONTEXT</code> is a directory containing any source file that you want to make available to Docker, just like the context directory in <code>docker build</code>. <code>QUERY</code> is a literal denoting what you want to build. You can use &quot;<code>-f &lt;Modusfile&gt;</code>&quot; to specify the Modusfile to build, and the default is <code>Modusfile</code> in the context directory.</p>
-<p>In our case, we can use <code>my_app(&quot;debug&quot;)</code> as our query in order to build a debug image. However, we can also specify unbounded variables in our query. If we simply use <code>my_app(X)</code> as our query, Modus will build two images in parallel for us, one being the debug image and the other being the release image. You can think of it as saying &quot;For all X, as long as <code>my_app(X)</code> generates a valid image, build it&quot;. You can also go a step further and add parameters to select the rust channel, base distributions, etc. You can't specify a default for these parameters, but you can define versions of <code>my_app</code> that takes different numbers (including zero) of parameters, to simulate having a default. For example, by adding:</p>
+<p><code>CONTEXT</code> is a directory containing any source file that you want to make available to Docker, just like the context directory in <code>docker build</code>. <code>GOAL</code> is a literal denoting what you want to build. You can use &quot;<code>-f &lt;Modusfile&gt;</code>&quot; to specify the Modusfile to build, and the default is <code>Modusfile</code> in the context directory.</p>
+<p>In our case, we can use <code>my_app(&quot;debug&quot;)</code> as our goal in order to build a debug image. However, we can also specify unbounded variables in our goal. If we simply use <code>my_app(X)</code> as our goal, Modus will build two images in parallel for us, one being the debug image and the other being the release image. You can think of it as saying &quot;For all X, as long as <code>my_app(X)</code> generates a valid image, build it&quot;. You can also go a step further and add parameters to select the rust channel, base distributions, etc. You can't specify a default for these parameters, but you can define versions of <code>my_app</code> that takes different numbers (including zero) of parameters, to simulate having a default. For example, by adding:</p>
 <pre><code class="language-Modusfile">my_app :- my_app(&quot;release&quot;).
 </code></pre>
-<p>The query <code>my_app</code> will now build the release version, while you can still use <code>my_app(&quot;debug&quot;)</code> to build the debug version.</p>
+<p>The goal <code>my_app</code> will now build the release version, while you can still use <code>my_app(&quot;debug&quot;)</code> to build the debug version.</p>
 <p>The attentive reader will have noticed that our Modusfile builds both a debug and a release image. Consider how you would do this with Dockerfiles — you would either need two separate Dockerfiles, each building one version, or do something with build arguments. It may not be a problem if you only have debug and release images, but it quickly become hard to manage, especially if you need to take separate steps depending on some arguments.</p>
 <h2 id="intermediate-build-stages"><a class="header" href="#intermediate-build-stages">Intermediate Build Stages</a></h2>
-<p>For our next step, we want to reduce the size of the final image by building the rust code in a separate stage, then starting a new image and copying the binary inside. This can be easily implemented in Modusfile as well. We will just need to add the following lines to our existing Modusfile, and use <code>trimmed_app</code> as our query instead:</p>
+<p>For our next step, we want to reduce the size of the final image by building the rust code in a separate stage, then starting a new image and copying the binary inside. This can be easily implemented in Modusfile as well. We will just need to add the following lines to our existing Modusfile, and use <code>trimmed_app</code> as our goal instead:</p>
 <pre><code class="language-Modusfile">trimmed_app(profile) :-
   (
     from(&quot;alpine&quot;),
@@ -259,7 +259,7 @@ my_app(channel) :-
   rust_channel(channel),
   run(f&quot;rustup run ${channel} cargo build&quot;).
 </code></pre>
-<p>Without <code>rust_channel(channel)</code>, the query <code>my_app(X)</code> would fail, because it is not possible to build an infinite set of images. With the predicate to limit the values of <code>X</code>, a query like <code>my_app(X)</code> will build 3 images, each with a different version of rust.</p>
+<p>Without <code>rust_channel(channel)</code>, the goal <code>my_app(X)</code> would fail, because it is not possible to build an infinite set of images. With the predicate to limit the values of <code>X</code>, a query like <code>my_app(X)</code> will build 3 images, each with a different version of rust.</p>
 <h2 id="where-to-go-from-here"><a class="header" href="#where-to-go-from-here">Where to go from here…</a></h2>
 <p>Now that you have learned the basics of Modus, you can go ahead and read the rest of the documentation, which dive deeper into how everything works exactly (groundness, predicate kinds, etc), as well as other built-in predicates and operators like <code>number_{gt,lt,eq,geq,leq}</code>, string parsing and manipulation, operators to set environment variables, temproarily changing the working directory with <code>in_workdir</code>, squashing image layers with <code>::merge</code>, etc.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="grammar"><a class="header" href="#grammar">Grammar</a></h1>
@@ -363,13 +363,13 @@ my_app(channel) :-
 <li><code>f&quot;hello, ${name}&quot;</code></li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="semantics"><a class="header" href="#semantics">Semantics</a></h1>
-<p>Given a build script and a query, Modus performs two operations:</p>
+<p>Given a Modusfile and a goal, Modus performs two operations:</p>
 <ol>
-<li>computes the build <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed acyclic graph (DAG)</a> using an extended <a href="https://en.wikipedia.org/wiki/Datalog">Datalog</a> solver;</li>
+<li>computes the build <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">DAG</a> using a <a href="https://en.wikipedia.org/wiki/Datalog">Datalog</a> solver;</li>
 <li>executes the build in parallel using <a href="https://github.com/moby/buildkit">BuildKit</a>.</li>
 </ol>
-<p>The build DAG is a graph that describes dependencies between build operations. It is a DAG, and not a set of trees, because some intermediate images can be shared and built only once. The DAG is computed by a Datalog solver as the minimal proof of the build target from true facts representing either existing images, or intrinsics like <code>run</code> which add build steps. The build DAG is constructed statically, i.e. the values of the variables do not depend on the results of build execution. Particularities of DAG construction are described in <a href="./static.html">Static</a>.</p>
-<p>After the build DAG is computed, it is transformed into a <a href="https://github.com/moby/buildkit">BuildKit</a> representation. Then, BuildKit executes build subtrees in parallel to construct the target images. Particularities of build execution are described in <a href="./runtime.html">Runtime</a>.</p>
+<p>The build DAG is a graph that describes dependencies between build operations. The DAG is computed by a Datalog solver as a minimal proof of the build target from true facts representing either existing images, or intrinsics like <code>run</code> which add build steps. The build DAG is constructed statically, i.e. the values of the variables do not depend on the results of build execution.</p>
+<p>After the build DAG is computed, it is transformed into a <a href="https://github.com/moby/buildkit">BuildKit</a> representation. Then, BuildKit executes build subtrees in parallel to construct the target images.</p>
 <h2 id="predicate-kinds"><a class="header" href="#predicate-kinds">Predicate Kinds</a></h2>
 <p>In a literal such as <code>a(b, &quot;c&quot;)</code>, we refer to <code>a</code> as the predicate name. There exist predicates of three and only three kinds:</p>
 <ul>
@@ -643,7 +643,7 @@ So we are not truly <em>inferring</em> <code>!windows(c1)</code>.</p>
         run(&quot;cd /app &amp;&amp; make&quot;)
     )::set_workdir(&quot;/app&quot;).
 </code></pre>
-<p>For the query <code>a(X)</code>, where <code>X</code> is a variable, Modus computes the following build trees:</p>
+<p>For the goal <code>a(X)</code>, where <code>X</code> is a variable, Modus computes the following build trees:</p>
 <pre><code>a(&quot;production&quot;)
 ╞══ from(&quot;alpine&quot;)
 └── a(&quot;development&quot;)::copy(&quot;/app&quot;, &quot;/app&quot;)
@@ -669,7 +669,7 @@ IEEE TKDE 1989</p>
 </ul>
 <p>Thus, Datalog presents a sweet spot between expressiveness and computatibility, which is important for a build system. Standard Datalog, despite its suitability for addressing their core dependency resolution problem, does not capture a container build environmental dependencies. To solve this problem, Modus extends Datalog with build-specific predicates and build parameters via ungrounded variables. Modus supports two Datalog extensions, namely builtin predicates described in <a href="./library/predicates/">Predicates</a> and non-grounded variables. To realise these extensions, Modus uses a custom top-down Datalog solver for generating proofs.</p>
 <h3 id="builtin-predicates"><a class="header" href="#builtin-predicates">Builtin Predicates</a></h3>
-<p>Dependency resolution is only part of the story. Container builds must also interact with the environment. Predicates elegantly capture these interactions. We have equipped Modus with a library of built-in predicates to handle these interactions. For example, the <code>semver_*</code> predicates define software version comparison as per the (SemVer)[https://semver.org/] specification.  For example, the following fact is true: <code>semver_lt(&quot;1.0.3&quot;,&quot;1.1.0&quot;)</code>, where <code>lt</code> means <code>&lt;</code>.</p>
+<p>Dependency resolution is only part of the story. Container builds must also interact with the environment. Predicates elegantly capture these interactions. We have equipped Modus with a library of built-in predicates to handle these interactions. For example, the <code>semver_*</code> predicates define software version comparison as per the <a href="https://semver.org/">SemVer</a> specification.  For example, the following fact is true: <code>semver_lt(&quot;1.0.3&quot;,&quot;1.1.0&quot;)</code>, where <code>lt</code> means <code>&lt;</code>.</p>
 <p>The key difficulty of adding built-in predicates to Datalog is that built-in predicates such as <code>semver_lt</code> are infinite relations, which require special handling to retain Datalog's decidability. We support built-in predicates by deferring the evaluation of a built-in predicate until the arguments of this predicate are bound to constants.</p>
 <p>Since not all arguments of a predicate have to be bound to a constant during evaluation, e.g. if an argument depends on the other arguments, builtin predicates in Modus have Prolog-like signatures that specify which parameters have to be initialised (see <a href="./library/predicates/index.html">Predicates</a>). <!-- FIXME: https://github.com/rust-lang/mdBook/issues/984 --></p>
 <h3 id="non-grounded-variables"><a class="header" href="#non-grounded-variables">Non-Grounded Variables</a></h3>
@@ -696,7 +696,7 @@ a(cflags) :-
   from(&quot;alpine&quot;),
   run(&quot;echo Hello&quot;).
 </code></pre>
-<p>A query like <code>a(&quot;foo&quot;)</code>, where <code>&quot;foo&quot;</code> is a arbitrary string constant, would build the same image, but the query <code>a(X)</code> is not allowed. This ensures that each resulting image is mapped to a constant literal like <code>a(&quot;foo&quot;)</code>.</p>
+<p>A goal like <code>a(&quot;foo&quot;)</code>, where <code>&quot;foo&quot;</code> is a arbitrary string constant, would build the same image, but the query <code>a(X)</code> is not allowed. This ensures that each resulting image is mapped to a constant literal like <code>a(&quot;foo&quot;)</code>.</p>
 <h3 id="proof-optimality"><a class="header" href="#proof-optimality">Proof Optimality</a></h3>
 <p>A Datalog fact can be inferred from other facts in multiple ways and therefore multiple proof trees may exists. Thus, an image defined in Modus may also be built using different build DAGs. Modus searches for an optimal proof, that is a proof with a minimal cost. The cost of a proof is the number of layers in the build DAG.</p>
 <p>To illustrate proof optimality, consider again this build script:</p>
@@ -712,7 +712,7 @@ a(cflags) :-
         run(&quot;cd /app &amp;&amp; make&quot;)
     )::set_workdir(&quot;/app&quot;).
 </code></pre>
-<p>For the query <code>a(&quot;production&quot;)</code>, Modus will compute the following build trees:</p>
+<p>For the goal <code>a(&quot;production&quot;)</code>, Modus will compute the following build trees:</p>
 <pre><code>a(&quot;production&quot;)
 ╞══ from(&quot;alpine&quot;)
 └── a(&quot;development&quot;)::copy(&quot;/app&quot;, &quot;/app&quot;)
@@ -723,7 +723,7 @@ a(cflags) :-
 <p>However, if we add a new rule that uses a cached development image from a registry</p>
 <pre><code class="language-Modusfile">a(&quot;development&quot;) :- from(&quot;myregistry.domain.com/app:1.1-dev&quot;).
 </code></pre>
-<p>then the result of the query <code>a(&quot;production&quot;)</code> will become</p>
+<p>then the result of the goal <code>a(&quot;production&quot;)</code> will become</p>
 <pre><code>a(&quot;production&quot;)
 ╞══ from(&quot;alpine&quot;)
 └── a(&quot;development&quot;)::copy(&quot;/app&quot;, &quot;/app&quot;)
@@ -744,9 +744,9 @@ a(cflags) :-
 <a href="https://asciinema.org/a/DelA6wHXgWGaFUhPUnZAdFZDw"><img src="https://asciinema.org/a/DelA6wHXgWGaFUhPUnZAdFZDw.svg" alt="asciicast" /></a></p>
 <h2 id="modus-build"><a class="header" href="#modus-build"><code>modus build</code></a></h2>
 <p>Much like <code>docker build</code>, the <code>modus build</code> command builds a Modusfile.</p>
-<p><strong>Syntax</strong>: <code>modus build [options] &lt;context&gt; &lt;query&gt;</code></p>
+<p><strong>Syntax</strong>: <code>modus build [options] &lt;context&gt; &lt;goal&gt;</code></p>
 <p><code>context</code> is a directory containing all files (including the Modusfile) to send to Docker for building. <code>.dockerignore</code> can be used to exclude files in the same way as <code>docker build</code>.</p>
-<p><code>query</code> is the target literal to build.</p>
+<p><code>goal</code> is the target literal to build.</p>
 <p><strong>Options</strong>:</p>
 <p><code>-f &lt;modusfile&gt;</code>: Allows building something other than <code>./Modusfile</code>.</p>
 <p><code>--json</code> or <code>--json=&lt;file&gt;</code>: Outputs the build results as JSON.</p>
@@ -776,16 +776,16 @@ a(cflags) :-
 <p>Defaults: <code>--image-export-concurrency=8</code>, <code>--image-resolve-concurrency=3</code>.</p>
 <h2 id="modus-proof"><a class="header" href="#modus-proof"><code>modus proof</code></a></h2>
 <p><code>modus proof</code> prints out proof trees based on some Modus facts/rules, and a provided goal.</p>
-<p><strong>Syntax</strong>: <code>modus proof [options] &lt;context&gt; &lt;query&gt;</code></p>
+<p><strong>Syntax</strong>: <code>modus proof [options] &lt;context&gt; &lt;goal&gt;</code></p>
 <ul>
 <li><code>context</code> is a directory that should contain the Modusfile that contains the facts/rules.
 This is chosen to match the interface of <code>modus build</code>.</li>
-<li><code>query</code> specifies the goal to prove.</li>
+<li><code>goal</code> specifies the goal to prove.</li>
 </ul>
 <p><strong>Options</strong>:</p>
 <ul>
 <li><code>--compact</code>: Changes the output of proof trees, omitting logical rule resolution.</li>
-<li><code>-e, --explain</code>: Prints out a structured 'explanation' of the steps taken to prove <code>&lt;query&gt;</code> during
+<li><code>-e, --explain</code>: Prints out a structured 'explanation' of the steps taken to prove <code>&lt;goal&gt;</code> during
 SLD resolution. (See <code>-g</code> for a graphical version of this.)
 This may be verbose.</li>
 <li><code>-f &lt;modusfile&gt;</code>: Use the facts and rules of this Modusfile, instead of <code>&lt;context&gt;/Modusfile</code>.</li>

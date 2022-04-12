@@ -148,13 +148,13 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="semantics"><a class="header" href="#semantics">Semantics</a></h1>
-<p>Given a build script and a query, Modus performs two operations:</p>
+<p>Given a Modusfile and a goal, Modus performs two operations:</p>
 <ol>
-<li>computes the build <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed acyclic graph (DAG)</a> using an extended <a href="https://en.wikipedia.org/wiki/Datalog">Datalog</a> solver;</li>
+<li>computes the build <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">DAG</a> using a <a href="https://en.wikipedia.org/wiki/Datalog">Datalog</a> solver;</li>
 <li>executes the build in parallel using <a href="https://github.com/moby/buildkit">BuildKit</a>.</li>
 </ol>
-<p>The build DAG is a graph that describes dependencies between build operations. It is a DAG, and not a set of trees, because some intermediate images can be shared and built only once. The DAG is computed by a Datalog solver as the minimal proof of the build target from true facts representing either existing images, or intrinsics like <code>run</code> which add build steps. The build DAG is constructed statically, i.e. the values of the variables do not depend on the results of build execution. Particularities of DAG construction are described in <a href="./static.html">Static</a>.</p>
-<p>After the build DAG is computed, it is transformed into a <a href="https://github.com/moby/buildkit">BuildKit</a> representation. Then, BuildKit executes build subtrees in parallel to construct the target images. Particularities of build execution are described in <a href="./runtime.html">Runtime</a>.</p>
+<p>The build DAG is a graph that describes dependencies between build operations. The DAG is computed by a Datalog solver as a minimal proof of the build target from true facts representing either existing images, or intrinsics like <code>run</code> which add build steps. The build DAG is constructed statically, i.e. the values of the variables do not depend on the results of build execution.</p>
+<p>After the build DAG is computed, it is transformed into a <a href="https://github.com/moby/buildkit">BuildKit</a> representation. Then, BuildKit executes build subtrees in parallel to construct the target images.</p>
 <h2 id="predicate-kinds"><a class="header" href="#predicate-kinds">Predicate Kinds</a></h2>
 <p>In a literal such as <code>a(b, &quot;c&quot;)</code>, we refer to <code>a</code> as the predicate name. There exist predicates of three and only three kinds:</p>
 <ul>
