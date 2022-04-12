@@ -339,6 +339,37 @@ my_app(channel) :-
        | &quot;x&quot; | &quot;y&quot; | &quot;z&quot;
 &lt;digit&gt; ::= &quot;0&quot; | &quot;1&quot; | &quot;2&quot; | &quot;3&quot; | &quot;4&quot; | &quot;5&quot; | &quot;6&quot; | &quot;7&quot; | &quot;8&quot; | &quot;9&quot;
 </code></pre>
+<h2 id="string-literals"><a class="header" href="#string-literals">String Literals</a></h2>
+<p>There exist two types of string literals:</p>
+<ul>
+<li>Normal strings</li>
+<li>Formatted strings</li>
+</ul>
+<p>Normal strings are sequences of characters surrounded with double quotes, in which <code>&quot;</code> needs to be escaped and <code>\</code> is used as the escape characted. Specifically, the following characters are escaped: <code>\&quot;</code>, <code>\\</code>, <code>\n</code>, <code>\r</code>, <code>\t</code>, <code>\\</code>, <code>\0</code>. To break a single-line string to multiple lines, use a string continuation, a newline character preceded with <code>\</code>. Below are examples of valid string literals:</p>
+<ul>
+<li><code>&quot;abc&quot;</code></li>
+<li><code>&quot;a\nb&quot;</code></li>
+<li><code>&quot;\&quot;abc\&quot;&quot;</code></li>
+<li>
+<pre><code>&quot;hello,\
+ world&quot;
+</code></pre>
+</li>
+</ul>
+<p>Formatted strings are just like normal strings, but they starts with the letter <code>f</code> before the first quote symbol, and <code>$</code> can be escaped. Below are examples of valid string literals:</p>
+<ul>
+<li><code>f&quot;abc&quot;</code></li>
+<li><code>f&quot;10\$&quot;</code></li>
+<li><code>f&quot;hello, ${name}&quot;</code></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="semantics"><a class="header" href="#semantics">Semantics</a></h1>
+<p>Given a build script and a query, Modus performs two operations:</p>
+<ol>
+<li>computes the build <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed acyclic graph (DAG)</a> using an extended <a href="https://en.wikipedia.org/wiki/Datalog">Datalog</a> solver;</li>
+<li>executes the build in parallel using <a href="https://github.com/moby/buildkit">BuildKit</a>.</li>
+</ol>
+<p>The build DAG is a graph that describes dependencies between build operations. It is a DAG, and not a set of trees, because some intermediate images can be shared and built only once. The DAG is computed by a Datalog solver as the minimal proof of the build target from true facts representing either existing images, or intrinsics like <code>run</code> which add build steps. The build DAG is constructed statically, i.e. the values of the variables do not depend on the results of build execution. Particularities of DAG construction are described in <a href="./static.html">Static</a>.</p>
+<p>After the build DAG is computed, it is transformed into a <a href="https://github.com/moby/buildkit">BuildKit</a> representation. Then, BuildKit executes build subtrees in parallel to construct the target images. Particularities of build execution are described in <a href="./runtime.html">Runtime</a>.</p>
 <h2 id="predicate-kinds"><a class="header" href="#predicate-kinds">Predicate Kinds</a></h2>
 <p>In a literal such as <code>a(b, &quot;c&quot;)</code>, we refer to <code>a</code> as the predicate name. There exist predicates of three and only three kinds:</p>
 <ul>
@@ -413,45 +444,6 @@ a_prime(Y) :- !a(Y).
     
 b(X) :- X = &quot;a&quot;, from(&quot;ubuntu&quot;).
 </code></pre>
-<h2 id="operator-kinds"><a class="header" href="#operator-kinds">Operator Kinds</a></h2>
-<p>There exist operators of three and only three kinds:</p>
-<ul>
-<li>image operators;</li>
-<li>layer operators;</li>
-<li>logic operators.</li>
-</ul>
-<p>Image operators are only applied to image expressons. Layer operators are only applied to layer expressions. Logic operators can be applied to any expressions.</p>
-<h2 id="string-literals"><a class="header" href="#string-literals">String Literals</a></h2>
-<p>There exist two types of string literals:</p>
-<ul>
-<li>Normal strings</li>
-<li>Formatted strings</li>
-</ul>
-<p>Normal strings are sequences of characters surrounded with double quotes, in which <code>&quot;</code> needs to be escaped and <code>\</code> is used as the escape characted. Specifically, the following characters are escaped: <code>\&quot;</code>, <code>\\</code>, <code>\n</code>, <code>\r</code>, <code>\t</code>, <code>\\</code>, <code>\0</code>. To break a single-line string to multiple lines, use a string continuation, a newline character preceded with <code>\</code>. Below are examples of valid string literals:</p>
-<ul>
-<li><code>&quot;abc&quot;</code></li>
-<li><code>&quot;a\nb&quot;</code></li>
-<li><code>&quot;\&quot;abc\&quot;&quot;</code></li>
-<li>
-<pre><code>&quot;hello,\
- world&quot;
-</code></pre>
-</li>
-</ul>
-<p>Formatted strings are just like normal strings, but they starts with the letter <code>f</code> before the first quote symbol, and <code>$</code> can be escaped. Below are examples of valid string literals:</p>
-<ul>
-<li><code>f&quot;abc&quot;</code></li>
-<li><code>f&quot;10\$&quot;</code></li>
-<li><code>f&quot;hello, ${name}&quot;</code></li>
-</ul>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="semantics"><a class="header" href="#semantics">Semantics</a></h1>
-<p>Given a build script and a query, Modus performs two operations:</p>
-<ol>
-<li>computes the build <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed acyclic graph (DAG)</a> using an extended <a href="https://en.wikipedia.org/wiki/Datalog">Datalog</a> solver;</li>
-<li>executes the build in parallel using <a href="https://github.com/moby/buildkit">BuildKit</a>.</li>
-</ol>
-<p>The build DAG is a graph that describes dependencies between build operations. It is a DAG, and not a set of trees, because some intermediate images can be shared and built only once. The DAG is computed by a Datalog solver as the minimal proof of the build target from true facts representing either existing images, or intrinsics like <code>run</code> which add build steps. The build DAG is constructed statically, i.e. the values of the variables do not depend on the results of build execution. Particularities of DAG construction are described in <a href="./static.html">Static</a>.</p>
-<p>After the build DAG is computed, it is transformed into a <a href="https://github.com/moby/buildkit">BuildKit</a> representation. Then, BuildKit executes build subtrees in parallel to construct the target images. Particularities of build execution are described in <a href="./runtime.html">Runtime</a>.</p>
 <h2 id="negation"><a class="header" href="#negation">Negation</a></h2>
 <p>Expressions can be negated, which acts as a logical check. Here are some examples of expressions using negation:</p>
 <ul>
@@ -625,7 +617,7 @@ So we are not truly <em>inferring</em> <code>!windows(c1)</code>.</p>
 </li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="foundations"><a class="header" href="#foundations">Foundations</a></h1>
-<p>This section discusses theoretical foundations of Modus. Note the understanding these foundations is not required to use Modus.</p>
+<p>Container images are build on top of other images or by copying information from other images. Therefore, the image construction problem can be viewed as the problem of resolving dependencies between container images. Modus concisely captures and resolves these dependencies using logic programming. This section discusses the logic programming foundations of Modus. You do not need to understand these foundations to use, and profit from, Modus.</p>
 <h2 id="design-principles"><a class="header" href="#design-principles">Design Principles</a></h2>
 <ul>
 <li><em>Maintainability</em>: make build definitions maintainable by enabling modularity, code reuse and dependency resolution.</li>
@@ -633,10 +625,10 @@ So we are not truly <em>inferring</em> <code>!windows(c1)</code>.</p>
 <li><em>Expressiveness</em>: enable the user to express complex build workflows.</li>
 <li><em>Simplicity</em>: provide minimalistic syntax and well-defined, non-Turing-complete semantics for build definitions.</li>
 </ul>
-<h2 id="build-model"><a class="header" href="#build-model">Build Model</a></h2>
+<h2 id="container-image-build-model"><a class="header" href="#container-image-build-model">Container Image Build Model</a></h2>
 <p>A <a href="https://opencontainers.org/">Docker/OSI container image</a> consists of a set of layers combined using a <a href="https://en.wikipedia.org/wiki/Union_mount">union mount filesystem</a>. To build an image, the user specifies the parent image and defines operations that are executed on top of the parent image to form new layers. The most common operations are copying local files into the container and executing shell commands. Another important operation which enables <a href="https://docs.docker.com/develop/develop-images/multistage-build/">multi-stage builds</a> is copying files from another image. A multi-stage build can be visualised as the following graph. Each instruction in this graph creates a new filesystem layer. Instructions are specified using Dockerfile's notation: <code>FROM</code> defines the parent image, <code>COPY</code> copies local files, <code>RUN</code> executes shell command, and <code>COPY --from</code> copies files from another container.</p>
 <p><img src="build_model.svg" alt="Container Image Build Model" /></p>
-<p>The key insight of Modus is that this build modus naturally maps to <a href="https://en.wikipedia.org/wiki/Horn_clause">Horn clauses</a>, logical formulas in the form \( u \leftarrow (p \wedge q\ \wedge ... \wedge\ t) \). Particularly, container images correspond to logical facts, build rules are logical rules that derive new facts from existing facts, and the build graph is the minimal proof of the fact representing the build target from the facts representing existing images.</p>
+<p>The key insight of Modus is that this build model maps to <a href="https://en.wikipedia.org/wiki/Horn_clause">Horn clauses</a>, logical formulas in the form \( u \leftarrow (p \wedge q\ \wedge ... \wedge\ t) \). Particularly, container images correspond to logical facts, build rules are logical rules that derive new facts from existing facts, and the build graph is a minimal proof of the fact representing the build target from the facts representing existing images.</p>
 <p>Consider the following recursive build script:</p>
 <pre><code class="language-Modusfile">a(mode) :-
     (
@@ -664,25 +656,25 @@ a(&quot;development&quot;)
 </code></pre>
 <p>The subtree <code>a(&quot;development&quot;)</code> of the two trees is shared; it is only built once.</p>
 <h2 id="datalog"><a class="header" href="#datalog">Datalog</a></h2>
-<p>Datalog is a specific kind of Horn clauses with specific semantics. A good overview of Datalog is given in the following article:</p>
-<p><em>What You Always Wanted to Know About Datalog (And Never Dared to Ask)</em><br>
+<p>Datalog is a specific kind of Horn clauses. A good overview of Datalog is given in the following article:</p>
+<p><em><a href="https://ieeexplore.ieee.org/document/43410">What You Always Wanted to Know About Datalog (And Never Dared to Ask)</a></em><br>
 Stefano Ceri, Georg Gottlob, Letizia Tanca<br>
 IEEE TKDE 1989</p>
-<p>Modus uses Datalog for several reasons:</p>
+<p>Modus uses Datalog because it is:</p>
 <ul>
-<li>Datalog is declarative, the success of solving does not depend on the ordering of clauses (although the order of clauses is still important, as they determine the order of build steps);</li>
-<li>Datalog is expressive;</li>
-<li>in Datalog, the generation of minimal proofs is decidable.</li>
+<li>declarative, the success of solving does not depend on the ordering of clauses;</li>
+<li>expressive;</li>
+<li>decidable, so it can always generate a minimal proof.</li>
 </ul>
-<p>Thus, Datalog presents a sweet spot between expressiveness and computatibility, which is important for a build system. Note that there is no fundamental connection between Datalog's expressive power and container builds. In fact, the expressiveness of the standard Datalog is not sufficient to conveniently express some natural build scenarios. For this reason, Modus supports two extensions, namely builtin predicates described in <a href="./library/predicates/README.html">Predicates</a> and non-grounded variables. To realise these extensions, Modus uses a custom top-down Datalog solver for generating proofs.</p>
+<p>Thus, Datalog presents a sweet spot between expressiveness and computatibility, which is important for a build system. Standard Datalog, despite its suitability for addressing their core dependency resolution problem, does not capture a container build environmental dependencies. To solve this problem, Modus extends Datalog with build-specific predicates and build parameters via ungrounded variables. Modus supports two Datalog extensions, namely builtin predicates described in <a href="./library/predicates/">Predicates</a> and non-grounded variables. To realise these extensions, Modus uses a custom top-down Datalog solver for generating proofs.</p>
 <h3 id="non-grounded-variables"><a class="header" href="#non-grounded-variables">Non-Grounded Variables</a></h3>
-<p>Modus extends Datalog with non-grounded variables. To illustrate this extension, consider the following build script:</p>
-<pre><code class="language-Modusfile">a(cflags) :-
-    from(&quot;gcc:latest&quot;),
-    copy(&quot;.&quot;, &quot;.&quot;),
-    run(f&quot;gcc ${cflags} test.c -o test&quot;).
+<p>Datalog's safety conditions require that each variable that occurs in the rule's head must occur in its body. This restriction in inconvenient for container builds as the following example demonstrates:</p>
+<pre><code class="language-Modusfile">app(cflags) :-
+  from(&quot;gcc:latest&quot;),
+  copy(&quot;.&quot;, &quot;.&quot;),
+  run(f&quot;gcc ${cflags} test.c -o test&quot;).
 </code></pre>
-<p>If the user specifies the query <code>a(&quot;-g&quot;)</code>, then Modus will build an image with a binary compiled with debug symbols. However, for the query <code>a(X)</code>, Modus will return an error, because the compilation flags <code>cflags</code> cannot be inferred from build definitions. This problem can be solved by, for example, adding possible compilation flags using a dedicated predicate:</p>
+<p>The variable <code>cflags</code> is not grounded, as it only appears as an argument of a built-in predicate, so this is an invalid Datalog program. Dockerfiles allow users to specify arbitrary parameters when launching a target's build, such as the <code>-g</code> flag. Such flags can be supported by, for example, adding possible compilation flags using a dedicated predicate:</p>
 <pre><code class="language-Modusfile">supported_flags(&quot;-g&quot;).
 supported_flags(&quot;&quot;).
 
@@ -692,15 +684,20 @@ a(cflags) :-
     copy(&quot;.&quot;, &quot;.&quot;),
     run(f&quot;gcc ${cflags} test.c -o test&quot;).
 </code></pre>
-<p>For the later script, the query <code>a(X)</code> will results in two images: <code>a(&quot;-g&quot;)</code> and <code>a(&quot;&quot;)</code>.</p>
-<p>In the standard Datalog, only the second variant is possible, because all variables have to be grounded (variables apearing in the head of a rule should also appear in the body, not in builtin predicates). However, specifying all possible values of all parameters is inconvenient. For this reason, Modus supports non-grounded variables. Specifically, it will make the best effort to initialise each variable in the rule before returning an error.</p>
-<p>Builtin predicates in Modus has Prolog-like signatures that specify which parameters have to be initialised (see <a href="./library/predicates/README.html">Predicates</a>). <!-- FIXME: https://github.com/rust-lang/mdBook/issues/984 -->
-For user-defined predicates, variables which does not appear in the body always has to be initialised before the rule can be applied. For example, for the script:</p>
-<pre><code class="language-Modusfile">a(X) :- from(&quot;alpine&quot;), run(&quot;echo Hello&quot;)
+<p>However, GCC accepts a large number of flags, so it would impractical to list all accepted flags in the Modus program. Instead, it would be natural to allow users to use this program to build the goal <code>app(&quot;-g&quot;)</code>, since the argument of <code>run</code> can then be inferred from the goal.</p>
+<p>To enable such usage scenarios, we relaxed the safety conditions by allowing user-defined predicates with non-grounded variables. At the same time, we introduced the new restriction that, during evaluation, we defer the evaluation of these predicates until all of their arguments are bound to constants. Doing so enabled us to support the usage scenario above without sacrificing Datalog's safety.</p>
+<p>For user-defined predicates, variables which do not appear in the body have to be initialised before the rule can be applied. For example, for the script:</p>
+<pre><code class="language-Modusfile">a(X) :-
+  from(&quot;alpine&quot;),
+  run(&quot;echo Hello&quot;).
 </code></pre>
-<p>A query like <code>a(&quot;foo&quot;)</code> where <code>foo</code> is any string constant would build the same image, but a query like <code>a(X)</code> is simply not allowed. This allows each resulting image to be mapped to a constant literal like <code>a(&quot;foo&quot;)</code>.</p>
+<p>A query like <code>a(&quot;foo&quot;)</code>, where <code>&quot;foo&quot;</code> is a arbitrary string constant, would build the same image, but the query <code>a(X)</code> is not allowed. This ensures that each resulting image is mapped to a constant literal like <code>a(&quot;foo&quot;)</code>.</p>
+<h3 id="builtin-predicates"><a class="header" href="#builtin-predicates">Builtin Predicates</a></h3>
+<p>To facilitate definition of image builds, we introduced a library of built-in predicates. For example, the <code>semver_*</code> predicates define software version comparison as per the (SemVer)[https://semver.org/] specification.  For example, the following fact is true: <code>semver_lt(&quot;1.0.3&quot;,&quot;1.1.0&quot;)</code>, where <code>lt</code> means <code>&lt;</code>.</p>
+<p>The key difficulty of adding built-in predicates to Datalog is that built-in predicates such as <code>semver_lt</code> are infinite relations, which require special handling to retain Datalog's decidability. As for non-grounded variables, we support built-in predicates by deferring the evaluation of a built-in predicate until the arguments of this predicate are bound to constants.</p>
+<p>Since not all arguments of a predicate have to be bound to a constant during evaluation, e.g. if an argument depends on the other arguments, builtin predicates in Modus have Prolog-like signatures that specify which parameters have to be initialised (see <a href="./library/predicates/index.html">Predicates</a>). <!-- FIXME: https://github.com/rust-lang/mdBook/issues/984 --></p>
 <h3 id="proof-optimality"><a class="header" href="#proof-optimality">Proof Optimality</a></h3>
-<p>Modus searches for the optimal proof, that is the proof with minimal cost. The cost of a proof is the number of layers in the build DAG.</p>
+<p>Modus searches for an optimal proof, that is a proof with a minimal cost. The cost of a proof is the number of layers in the build DAG.</p>
 <p>To illustrate proof optimality, consider again this build script:</p>
 <pre><code class="language-Modusfile">a(mode) :-
     (
@@ -740,6 +737,7 @@ For user-defined predicates, variables which does not appear in the body always 
     choice = &quot;left&quot;, b;
     choice = &quot;right&quot;, c.
 </code></pre>
+<p>Modus produces a warning when the build graph construction is non-deterministic.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="command-line-tool"><a class="header" href="#command-line-tool">Command Line Tool</a></h1>
 <p>The following screencast demonstrates a simple but complete workflow of proving, building, tagging and running images.
 <a href="https://asciinema.org/a/DelA6wHXgWGaFUhPUnZAdFZDw"><img src="https://asciinema.org/a/DelA6wHXgWGaFUhPUnZAdFZDw.svg" alt="asciicast" /></a></p>
