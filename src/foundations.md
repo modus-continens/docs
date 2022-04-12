@@ -163,13 +163,13 @@ a("production")
 
 because this tree involves fewer layer operations than the original one.
 
-There may be situations when several minimal proofs of the same cost exist. In this case, Modus chooses one non-deterministically. Specifically, for a given program and a goal, Modus will always choose the same proof, but reordering rules may cause Modus to generate a different proof. To avoid non-determinism, it is recommend to avoid rules with uncontrolled choice:
+There may be situations when several minimal proofs of the same cost exist. In this case, Modus chooses one non-deterministically. Specifically, for a given program and a goal, Modus will always choose the same proof, but reordering rules may cause Modus to generate a different proof. To avoid non-determinism, one should avoid rules with uncontrolled choice:
 
 ```Modusfile
 a :- b; c.
 ```
 
-Instead, this rule can be re-written with an auxiliary variable to control the choice:
+Instead, this rule can be re-written with an auxiliary parameter to control the choice:
 
 ```Modusfile
 a("left") :- b.
