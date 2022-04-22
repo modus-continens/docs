@@ -582,7 +582,7 @@ So we are not truly <em>inferring</em> <code>!windows(c1)</code>.</p>
 <li>
 <p><a name="copy"></a><code>::copy(+src, +dst)</code>: Copy file/directory from another image.</p>
 <p>Existing files already in the current image will be overwritten in the new layer, and directories will be copied recursively. Any non-existant parent directories will be created.</p>
-<p>This is equivalent to <code>COPY --from=src_image</code> in Dockerfile. Following Docker's behavior, if <code>src</code> is a directory, the content of <code>src</code> is copied into <code>dst</code>, but not <code>src</code> itself. This means that <code>copy(&quot;dir&quot;, &quot;/&quot;)</code> is equivalent to <code>cp -r dir/* /</code>.</p>
+<p>This is equivalent to <code>COPY --from=src_image</code> in Dockerfile. Following Docker's behavior, if <code>src</code> is a directory, the content of <code>src</code> is copied into <code>dst</code>, but not <code>src</code> itself. This means that <code>copy(&quot;dir&quot;, &quot;/&quot;)</code> is equivalent to <code>cp -r dir/* /</code>, except that hidden files are also copied.</p>
 <p>If <code>src</code> is a relative path, it is resolved based on the source image's working directory. If <code>dst</code> is a relative path, it is resolved based on the current image's working directory.</p>
 </li>
 <li>
