@@ -485,7 +485,7 @@ So we are not truly <em>inferring</em> <code>!windows(c1)</code>.</p>
 <li><code>-</code> means: This variable is an output to the predicate. It is usually non-instantiated, but may be if you want to check for a specific &quot;return value&quot;.</li>
 </ul>
 <p>For example, <code>run</code> has the signature <code>run(+cmdline)</code>, which means that the argument has to be initialised.</p>
-<table><thead><tr><th>Predicate</th><th>Kind</th><th>Description</th></tr></thead><tbody>
+<div class="table-wrapper"><table><thead><tr><th>Predicate</th><th>Kind</th><th>Description</th></tr></thead><tbody>
 <tr><td><a href="library/predicates/./image.html#from"><code>from</code></a></td><td>Image</td><td>Refer to existing local/registry image by its name</td></tr>
 <tr><td><a href="library/predicates/./layer.html#run"><code>run</code></a></td><td>Layer</td><td>Execute shell command</td></tr>
 <tr><td><a href="library/predicates/./layer.html#copy"><code>copy</code></a></td><td>Layer</td><td>Copy local file/directory</td></tr>
@@ -502,7 +502,7 @@ So we are not truly <em>inferring</em> <code>!windows(c1)</code>.</p>
 <tr><td><a href="library/predicates/./logic/semver.html#semver_op"><code>semver_geq</code></a></td><td>Logic</td><td><code>&gt;=</code> for SemVer versions</td></tr>
 <tr><td><a href="library/predicates/./logic/semver.html#semver_op"><code>semver_leq</code></a></td><td>Logic</td><td><code>&lt;=</code> for SemVer versions</td></tr>
 </tbody></table>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="image"><a class="header" href="#image">Image</a></h1>
+</div><div style="break-before: page; page-break-before: always;"></div><h1 id="image"><a class="header" href="#image">Image</a></h1>
 <ul>
 <li>
 <p><a name="from"></a><code>from(+imageref)</code>: Refer to existing local/registry image by its name.</p>
@@ -559,7 +559,7 @@ So we are not truly <em>inferring</em> <code>!windows(c1)</code>.</p>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="operators"><a class="header" href="#operators">Operators</a></h1>
 <p>Operators begin with <code>::</code>; they can be applied to expressions to control the build process.</p>
-<table><thead><tr><th>Operator</th><th>From</th><th>To</th><th>Description</th></tr></thead><tbody>
+<div class="table-wrapper"><table><thead><tr><th>Operator</th><th>From</th><th>To</th><th>Description</th></tr></thead><tbody>
 <tr><td><a href="library/operators/./image.html#copy"><code>::copy</code></a></td><td>Image</td><td>Layer</td><td>Copy file/directory to current image</td></tr>
 <tr><td><a href="library/operators/./image.html#simple-set"><code>::set_env</code></a></td><td>Image</td><td>Image</td><td>Set environment variable</td></tr>
 <tr><td><a href="library/operators/./image.html#simple-set"><code>::set_entrypoint</code></a></td><td>Image</td><td>Image</td><td>Set entrypoint</td></tr>
@@ -571,7 +571,7 @@ So we are not truly <em>inferring</em> <code>!windows(c1)</code>.</p>
 <tr><td><a href="library/operators/./layer.html#in_env"><code>::in_env</code></a></td><td>Layer</td><td>Layer</td><td>Specify environment variables for layer commands</td></tr>
 <tr><td><a href="library/operators/./layer.html#merge"><code>::merge</code></a></td><td>Layer</td><td>Layer</td><td>Merge layers</td></tr>
 </tbody></table>
-<!-- | [`::set_user`](./operators/image.md#set_user) | Image | Set user | -->
+</div><!-- | [`::set_user`](./operators/image.md#set_user) | Image | Set user | -->
 <!-- | [`::set_expose`](./operators/image.md#set_expose) | Image | Set exposed port | -->
 <!-- | [`::set_cmd`](./operators/image.md#set_cmd) | Image | Set default arguments to entrypoint | -->
 <!-- | [`::set_volume`](./operators/image.md#set_volume) | Image | Set volume | -->
@@ -589,7 +589,7 @@ So we are not truly <em>inferring</em> <code>!windows(c1)</code>.</p>
 <p><a name="append-path"></a><code>::append_path(+path)</code>: append string to the PATH environment variable.</p>
 </li>
 <li>
-<p><a name="simple-set"></a><code>::set_env(+key, +value)</code>, <code>::set_entrypoint(+str_or_array)</code>, <code>::set_cmd(+array)</code>, <code>::set_workdir(+dir)</code>, <code>::set_user(+username)</code>: Set image properties.</p>
+<p><a name="simple-set"></a><code>::set_env(+key, +value)</code>, <code>::set_entrypoint(+str_or_array)</code>, <code>::set_cmd(+array)</code>, <code>::set_workdir(+dir)</code>, <code>::set_user(+username)</code>, <code>::set_label(+key, +value)</code>: Set image properties.</p>
 <p><code>::set_workdir</code> also allows specifying a relative path based on the input image's working directory. This will be resolved to an absolute path.</p>
 <p><code>::set_entrypoint</code> will clear any command the image has, to be consistent with the <code>ENTRYPOINT</code> command in Dockerfile.</p>
 <p>Example:</p>
@@ -599,7 +599,8 @@ So we are not truly <em>inferring</em> <code>!windows(c1)</code>.</p>
     copy(&quot;./app&quot;, &quot;/&quot;),
     copy(&quot;./entrypoint.sh&quot;, &quot;/&quot;)
   )::set_entrypoint(&quot;/entrypoint.sh&quot;)
-   ::set_cmd([&quot;start&quot;]).
+   ::set_cmd([&quot;start&quot;])
+   ::set_label(&quot;org.opencontainers.image.vendor&quot;, &quot;Modus&quot;).
 </code></pre>
 </li>
 </ul>

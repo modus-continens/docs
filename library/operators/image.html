@@ -159,7 +159,7 @@
 <p><a name="append-path"></a><code>::append_path(+path)</code>: append string to the PATH environment variable.</p>
 </li>
 <li>
-<p><a name="simple-set"></a><code>::set_env(+key, +value)</code>, <code>::set_entrypoint(+str_or_array)</code>, <code>::set_cmd(+array)</code>, <code>::set_workdir(+dir)</code>, <code>::set_user(+username)</code>: Set image properties.</p>
+<p><a name="simple-set"></a><code>::set_env(+key, +value)</code>, <code>::set_entrypoint(+str_or_array)</code>, <code>::set_cmd(+array)</code>, <code>::set_workdir(+dir)</code>, <code>::set_user(+username)</code>, <code>::set_label(+key, +value)</code>: Set image properties.</p>
 <p><code>::set_workdir</code> also allows specifying a relative path based on the input image's working directory. This will be resolved to an absolute path.</p>
 <p><code>::set_entrypoint</code> will clear any command the image has, to be consistent with the <code>ENTRYPOINT</code> command in Dockerfile.</p>
 <p>Example:</p>
@@ -169,7 +169,8 @@
     copy(&quot;./app&quot;, &quot;/&quot;),
     copy(&quot;./entrypoint.sh&quot;, &quot;/&quot;)
   )::set_entrypoint(&quot;/entrypoint.sh&quot;)
-   ::set_cmd([&quot;start&quot;]).
+   ::set_cmd([&quot;start&quot;])
+   ::set_label(&quot;org.opencontainers.image.vendor&quot;, &quot;Modus&quot;).
 </code></pre>
 </li>
 </ul>

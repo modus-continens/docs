@@ -1,3 +1,4 @@
+// hljs compiled with: node tools/build.js -t browser dockerfile modusfile
 /*!
   Highlight.js v11.5.0 (git: 3ea6652536)
   (c) 2006-2022 Ivan Sagalaev and other contributors
@@ -323,7 +324,7 @@ contains:[e.HASH_COMMENT_MODE,e.APOS_STRING_MODE,e.QUOTE_STRING_MODE,e.NUMBER_MO
 beginKeywords:"run cmd entrypoint volume add copy workdir label healthcheck shell",
 starts:{end:/[^\\]$/,subLanguage:"bash"}}],illegal:"</"}),grmr_modusfile:e=>{
 const t={
-built_in:["from","run","merge","copy","string_concat","string_eq","in_workdir","set_workdir","set_entrypoint","set_cmd","in_env","set_env","append_path","number_eq","number_gt","number_lt","number_geq","number_leq"]
+built_in:["from","run","merge","copy","string_concat","string_eq","in_workdir","set_workdir","set_entrypoint","set_cmd","in_env","set_env","set_label","append_path","number_eq","number_gt","number_lt","number_geq","number_leq"]
 },n={match:/[a-zA-Z0-9][a-zA-Z0-9_]*/,scope:"variable",relevance:0},s=[{
 scope:"string",begin:/f"/,end:/"/,relevance:0,contains:[e.BACKSLASH_ESCAPE,{
 scope:"meta",begin:/\$\{/,end:/\}/,contains:[n]}]},n,e.QUOTE_STRING_MODE],i={
